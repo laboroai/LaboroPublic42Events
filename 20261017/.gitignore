@@ -2,8 +2,6 @@
 .env
 .env.*
 !.env.example
-# 当日配る Claude Code の設定（Bedrockのキーが入る）。ひな形は claude-settings.example.json
-settings.json
 
 # 当日配る固有QA。リポジトリに入れない
 data/secret_qa.csv
