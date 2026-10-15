@@ -1,8 +1,10 @@
-"""HANDSON_MOCK=1 で、APIを呼ばずに配布物の動きを確かめる。"""
+"""HANDSON_MOCK=1 で、APIを呼ばずに配布物の動きを確かめる。
+
+ツールをつないだエージェントの試験は、運営側で持つ。
+"""
 
 import json
 import os
-import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -16,8 +18,9 @@ from lib import rag
 from lib.runner import ask, load_agent
 
 ROOT = Path(__file__).resolve().parent.parent
-SECRET = ROOT / "ops" / "sample_secret_qa.csv"
+# 当日配る固有QAの代わり。本物の合言葉は書かない
 SECRET_Q = "今日のハンズオンの合言葉は？"
+SECRET_CSV = f"question,answer\n{SECRET_Q},試験用の合言葉です。\n"
 
 
 @pytest.fixture
@@ -28,7 +31,7 @@ def data(tmp_path):
     (d / "my_qa.csv").write_text(
         "question,answer\n42の一番の魅力は？,仲間と教え合えること\n授業料はいくら？,無料\n", encoding="utf-8"
     )
-    shutil.copy(SECRET, d / "secret_qa.csv")
+    (d / "secret_qa.csv").write_text(SECRET_CSV, encoding="utf-8")
     return d
 
 
@@ -76,14 +79,6 @@ def test_template_agent_says_hello_without_tools():
     assert "こんにちは" in result["answer"]
 
 
-def test_reference_agent_answers_secret_qa_with_hits(index):
-    result = ask(load_agent("ops.reference_agent"), SECRET_Q)
-    [call] = result["tool_calls"]
-    assert call["name"] == "search_qa"
-    assert call["response"]["results"][0]["source"] == "secret_qa.csv"
-    assert "そらまめ通信" in result["answer"]
-
-
 def _run(*args, env=None):
     return subprocess.run(
         [sys.executable, *args], cwd=ROOT, capture_output=True, text=True,
@@ -97,16 +92,17 @@ def test_commands_stop_with_a_message_when_key_is_missing():
     assert "OPENAI_API_KEY" in res.stderr
 
 
-def test_ask_shows_hits_and_saves_answer(index, tmp_path, monkeypatch):
+def test_ask_saves_answer(tmp_path, monkeypatch):
     import ask as ask_cmd
 
     answers = tmp_path / "out" / "answers.jsonl"
     monkeypatch.setattr(ask_cmd, "ANSWERS", answers)
-    monkeypatch.setattr(sys, "argv", ["ask.py", "--save", "--agent", "ops.reference_agent", SECRET_Q])
+    monkeypatch.setattr(sys, "argv", ["ask.py", "--save", "こんにちは"])
     ask_cmd.main()
     record = json.loads(answers.read_text(encoding="utf-8").splitlines()[0])
-    assert record["question"] == SECRET_Q
-    assert record["tool_calls"][0]["name"] == "search_qa"
+    assert record["question"] == "こんにちは"
+    assert record["agent"] == "my_agent.agent"
+    assert record["tool_calls"] == []
 
 
 def test_real_model_calls_openai(monkeypatch):
