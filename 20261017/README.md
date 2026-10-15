@@ -35,6 +35,7 @@ docker compose build
 | `data/my_qa.csv` | あなたが書く42の魅力QA | **書く** |
 | `data/shakaijin_qa.csv` | 社会人向けのメリットのQA（全員共通） | 触らない |
 | `data/secret_qa.csv` | 当日配る固有QA | 配られたら置く |
+| `ops/sample_secret_qa.csv` | 固有QAの練習用。本物の合言葉は入っていない | 当日の前に試すなら `data/secret_qa.csv` にコピーする |
 | `register.py`、`search.py`、`ask.py` | 上のコマンド | 使う |
 | `lib/rag.py` | QAの登録と検索。S6では `search(query, k)` を使う | 触らない |
 | `lib/model.py`、`lib/runner.py`、`lib/cli.py` | モデルの呼び出しと、エージェントの実行 | 触らない |

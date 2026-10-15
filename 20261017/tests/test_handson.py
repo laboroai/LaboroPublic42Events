@@ -5,6 +5,7 @@
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -18,9 +19,9 @@ from lib import rag
 from lib.runner import ask, load_agent
 
 ROOT = Path(__file__).resolve().parent.parent
-# 当日配る固有QAの代わり。本物の合言葉は書かない
+# 当日配る固有QAの練習用。本物の合言葉は書かない
+SECRET = ROOT / "ops" / "sample_secret_qa.csv"
 SECRET_Q = "今日のハンズオンの合言葉は？"
-SECRET_CSV = f"question,answer\n{SECRET_Q},試験用の合言葉です。\n"
 
 
 @pytest.fixture
@@ -31,7 +32,7 @@ def data(tmp_path):
     (d / "my_qa.csv").write_text(
         "question,answer\n42の一番の魅力は？,仲間と教え合えること\n授業料はいくら？,無料\n", encoding="utf-8"
     )
-    (d / "secret_qa.csv").write_text(SECRET_CSV, encoding="utf-8")
+    shutil.copy(SECRET, d / "secret_qa.csv")
     return d
 
 
