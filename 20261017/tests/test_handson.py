@@ -19,7 +19,7 @@ from lib import rag
 from lib.runner import ask, load_agent
 
 ROOT = Path(__file__).resolve().parent.parent
-# 当日配る固有QAの練習用。本物の合言葉は書かない
+# 当日配る固有QA。S5で data/secret_qa.csv にコピーしてもらう
 SECRET = ROOT / "ops" / "sample_secret_qa.csv"
 SECRET_Q = "今日のハンズオンの合言葉は？"
 
