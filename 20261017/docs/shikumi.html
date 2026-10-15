@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>仕組みの説明（S3）</title>
+<style>
+  :root {
+    --bg: #fbfaf7;
+    --surface: #ffffff;
+    --text: #1f2328;
+    --muted: #5b6168;
+    --line: #d9d6cf;
+    --accent: #1d5fa8;
+    --accent-soft: #e5eef8;
+    --warm: #b5541c;
+    --warm-soft: #f8ebe2;
+    --ok: #2f7a3e;
+    --code-bg: #f2f0eb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #17191c;
+      --surface: #1f2226;
+      --text: #e6e3dc;
+      --muted: #a3a7ad;
+      --line: #3a3e44;
+      --accent: #7fb0e8;
+      --accent-soft: #1f2f42;
+      --warm: #e89a6b;
+      --warm-soft: #3a2a20;
+      --ok: #7cc48b;
+      --code-bg: #26292e;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #17191c;
+    --surface: #1f2226;
+    --text: #e6e3dc;
+    --muted: #a3a7ad;
+    --line: #3a3e44;
+    --accent: #7fb0e8;
+    --accent-soft: #1f2f42;
+    --warm: #e89a6b;
+    --warm-soft: #3a2a20;
+    --ok: #7cc48b;
+    --code-bg: #26292e;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", system-ui, sans-serif;
+    font-size: 17px;
+    line-height: 1.8;
+  }
+  main { max-width: 860px; margin: 0 auto; padding: 32px 16px 80px; }
+  header { margin-bottom: 32px; }
+  .step { color: var(--muted); font-size: 14px; letter-spacing: .04em; }
+  h1 { font-size: 30px; line-height: 1.4; margin: 4px 0 12px; }
+  h2 { font-size: 23px; line-height: 1.5; margin: 0 0 8px; }
+  h3 { font-size: 17px; margin: 24px 0 4px; }
+  p { margin: 8px 0; }
+  nav ol { margin: 12px 0 0; padding-left: 1.4em; }
+  nav a, a { color: var(--accent); }
+  section {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 24px 24px 20px;
+    margin: 24px 0;
+  }
+  .num { color: var(--accent); font-weight: 700; margin-right: .4em; }
+  .point {
+    background: var(--accent-soft);
+    border-left: 4px solid var(--accent);
+    padding: 10px 14px;
+    margin: 16px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .later {
+    background: var(--warm-soft);
+    border-left: 4px solid var(--warm);
+    padding: 10px 14px;
+    margin: 16px 0 4px;
+    border-radius: 0 6px 6px 0;
+  }
+  .later b { color: var(--warm); }
+  code, pre { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: 14px; }
+  code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+  pre { background: var(--code-bg); padding: 12px 14px; border-radius: 6px; overflow-x: auto; line-height: 1.6; margin: 12px 0; }
+  pre code { background: none; padding: 0; }
+  svg { display: block; width: 100%; height: auto; margin: 12px 0; }
+  svg text { fill: var(--text); font-family: inherit; }
+  svg .muted { fill: var(--muted); }
+  svg .box { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+  svg .box-accent { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+  svg .box-warm { fill: var(--warm-soft); stroke: var(--warm); stroke-width: 1.5; }
+  svg .arrow { stroke: var(--muted); stroke-width: 1.5; fill: none; }
+  svg .arrowhead { fill: var(--muted); }
+  .demo { border: 1px dashed var(--line); border-radius: 8px; padding: 14px 16px; margin: 16px 0; }
+  .demo-title { font-size: 14px; color: var(--muted); margin-bottom: 6px; }
+  button {
+    font: inherit; font-size: 15px;
+    background: var(--accent); color: var(--surface);
+    border: 0; border-radius: 6px; padding: 6px 14px; cursor: pointer;
+  }
+  button.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+  button:focus-visible { outline: 3px solid var(--warm); outline-offset: 2px; }
+  .bars { margin: 8px 0; }
+  .bar-row { display: grid; grid-template-columns: 5.5em 1fr 3.2em; gap: 8px; align-items: center; font-size: 15px; }
+  .bar { height: 14px; background: var(--accent); border-radius: 3px; }
+  .bar-track { background: var(--code-bg); border-radius: 3px; }
+  .out { font-size: 18px; margin: 10px 0 4px; min-height: 1.8em; }
+  .out .picked { color: var(--warm); font-weight: 700; }
+  .history { font-size: 14px; color: var(--muted); }
+  .queries { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; margin: 8px 0; }
+  th, td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { color: var(--muted); font-weight: 500; }
+  td.score { font-variant-numeric: tabular-nums; width: 4.5em; }
+  .note { font-size: 14px; color: var(--muted); }
+  footer { color: var(--muted); font-size: 14px; margin-top: 32px; }
+  @media (max-width: 560px) {
+    body { font-size: 16px; }
+    h1 { font-size: 24px; }
+    section { padding: 18px 16px 14px; }
+  }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div class="step">S3 仕組みの説明</div>
+  <h1>今日作るエージェントの中で、何が起きているか</h1>
+  <p>今日作るのは、質問を受けて、自分で書いたQAを探し、それをもとに答えるエージェントです。中では4つの仕組みが動いています。どれも、後半のS7とS9で起きることにつながります。</p>
+  <svg viewBox="0 0 820 130" role="img" aria-label="質問からQAの検索、エージェント、回答までの流れ">
+    <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="arrowhead"/></marker></defs>
+    <rect x="10" y="40" width="120" height="50" rx="8" class="box"/>
+    <text x="70" y="70" text-anchor="middle">質問</text>
+    <rect x="180" y="40" width="200" height="50" rx="8" class="box-accent"/>
+    <text x="280" y="62" text-anchor="middle">エージェント（LLM）</text>
+    <text x="280" y="81" text-anchor="middle" class="muted" font-size="13">1. LLM</text>
+    <rect x="430" y="10" width="170" height="50" rx="8" class="box-accent"/>
+    <text x="515" y="32" text-anchor="middle">検索ツール</text>
+    <text x="515" y="51" text-anchor="middle" class="muted" font-size="13">4. ツール呼び出し</text>
+    <rect x="640" y="10" width="170" height="50" rx="8" class="box-accent"/>
+    <text x="725" y="32" text-anchor="middle">あなたのQA</text>
+    <text x="725" y="51" text-anchor="middle" class="muted" font-size="13">3. ベクトル検索</text>
+    <rect x="430" y="75" width="170" height="50" rx="8" class="box"/>
+    <text x="515" y="98" text-anchor="middle">回答</text>
+    <text x="515" y="117" text-anchor="middle" class="muted" font-size="13">2. RAG</text>
+    <line x1="130" y1="65" x2="176" y2="65" class="arrow" marker-end="url(#ah)"/>
+    <line x1="380" y1="52" x2="426" y2="37" class="arrow" marker-end="url(#ah)"/>
+    <line x1="600" y1="35" x2="636" y2="35" class="arrow" marker-end="url(#ah)"/>
+    <line x1="380" y1="78" x2="426" y2="98" class="arrow" marker-end="url(#ah)"/>
+  </svg>
+  <nav>
+    <ol>
+      <li><a href="#llm">LLM：次の言葉を確率で選ぶ</a></li>
+      <li><a href="#rag">RAG：資料を渡して答えさせる</a></li>
+      <li><a href="#vector">ベクトル検索：意味の近さで探す</a></li>
+      <li><a href="#tool">ツール呼び出し：説明を読んで、呼ぶかどうかを決める</a></li>
+    </ol>
+  </nav>
+</header>
+
+<section id="llm">
+  <h2><span class="num">1</span>LLM：次の言葉を確率で選ぶ</h2>
+  <p>LLMは、それまでの文章を読んで、次に来そうな言葉を候補ごとの確率で出します。その確率に従って1つ選び、また次の言葉を選ぶ。これをくり返して文章を作ります。</p>
+  <p>いちばん確率の高い言葉が毎回選ばれるとは限りません。そのため、同じ質問をしても、聞くたびに文面が変わります。</p>
+
+  <div class="demo">
+    <div class="demo-title">ためしてみる（数字は説明用のたとえです）</div>
+    <p>「42 Tokyoの魅力は、」の次に来る言葉の候補:</p>
+    <div class="bars" id="bars"></div>
+    <div class="out" id="out">42 Tokyoの魅力は、<span class="picked" id="picked">…</span></div>
+    <p><button id="pick">次の言葉を選ぶ</button> <button class="ghost" id="reset">記録を消す</button></p>
+    <div class="history" id="history"></div>
+  </div>
+
+  <div class="later"><b>S9で見ること</b>　同じ質問をもう一度聞くと、前と同じ回答は返ってきません。言い回しが少し変わるだけでも、<code>assert answer == "..."</code> のようなテストは通りません。</div>
+</section>
+
+<section id="rag">
+  <h2><span class="num">2</span>RAG：資料を渡して答えさせる</h2>
+  <p>RAG（検索拡張生成）は、質問に関係しそうな資料を先に探し、その資料と質問をいっしょにLLMへ渡して答えさせる仕組みです。今日の資料は、皆さんが書くQAです。</p>
+  <svg viewBox="0 0 820 170" role="img" aria-label="質問で検索してQAを取り出し、質問とQAをLLMに渡して回答を作る流れ">
+    <rect x="10" y="60" width="120" height="50" rx="8" class="box"/>
+    <text x="70" y="90" text-anchor="middle">質問</text>
+    <rect x="180" y="10" width="160" height="50" rx="8" class="box-accent"/>
+    <text x="260" y="40" text-anchor="middle">QAを検索</text>
+    <rect x="390" y="10" width="160" height="50" rx="8" class="box"/>
+    <text x="470" y="32" text-anchor="middle">見つかったQA</text>
+    <text x="470" y="51" text-anchor="middle" class="muted" font-size="13">上位3件</text>
+    <rect x="390" y="100" width="160" height="60" rx="8" class="box-accent"/>
+    <text x="470" y="126" text-anchor="middle">LLM</text>
+    <text x="470" y="146" text-anchor="middle" class="muted" font-size="13">質問＋QAを読む</text>
+    <rect x="610" y="100" width="200" height="60" rx="8" class="box-warm"/>
+    <text x="710" y="126" text-anchor="middle">回答</text>
+    <text x="710" y="146" text-anchor="middle" class="muted" font-size="13">QA＋LLMがもともと知っていること</text>
+    <line x1="130" y1="78" x2="176" y2="42" class="arrow" marker-end="url(#ah)"/>
+    <line x1="340" y1="35" x2="386" y2="35" class="arrow" marker-end="url(#ah)"/>
+    <line x1="470" y1="60" x2="470" y2="96" class="arrow" marker-end="url(#ah)"/>
+    <line x1="130" y1="95" x2="386" y2="128" class="arrow" marker-end="url(#ah)"/>
+    <line x1="550" y1="130" x2="606" y2="130" class="arrow" marker-end="url(#ah)"/>
+  </svg>
+  <div class="point">LLMは、渡された資料だけで答えるとは限りません。もともと知っていることも混ぜて答えます。QAに書いていないことが、もっともらしく回答に入ることがあります。</div>
+  <div class="later"><b>S7で見ること</b>　回答を公式サイトに載せてよいかを判定するとき、その一文がQAから来たのか、LLMが足したのかを見てください。判定が割れる理由の一つになります。</div>
+</section>
+
+<section id="vector">
+  <h2><span class="num">3</span>ベクトル検索：意味の近さで探す</h2>
+  <p>検索は、言葉が一致するかではなく、意味が近いかで探します。そのために、文章を数の並び（ベクトル）に変えます。今日使う埋め込みモデル（<code>text-embedding-3-small</code>）では、1つの文章が1536個の数になります。</p>
+  <p>意味の近い文章は、ベクトルの向きが近くなります。向きの近さを点数にしたのが、S5の検索コマンドに出る点数です。1に近いほど、意味が近いことを表します。</p>
+
+  <div class="demo">
+    <div class="demo-title">ためしてみる（2次元に縮めたたとえです。本物は1536次元）</div>
+    <p>質問を選ぶと、QAとの近さの点数が出ます。言葉が一致していなくても、意味が近ければ点数は高くなります。</p>
+    <div class="queries" id="queries"></div>
+    <svg id="plot" viewBox="0 60 740 215" style="max-width:740px;margin:12px auto" role="img" aria-label="QAと質問をベクトルとして平面に置いた図"></svg>
+    <table>
+      <thead><tr><th>順位</th><th>点数</th><th>QAの質問</th></tr></thead>
+      <tbody id="ranking"></tbody>
+    </table>
+  </div>
+
+  <h3>S5で実際に出る画面</h3>
+  <pre><code>$ python search.py "今日のハンズオンの合言葉は？"
+「今日のハンズオンの合言葉は？」に近いQA（点数は1に近いほど近い）
+  1. 0.829  secret_qa.csv     今日のハンズオンの合言葉は？
+  ...</code></pre>
+  <p class="note">点数は10/9に本物の埋め込みモデルで試したときの値です。このとき2位は0.115で、1位と大きく離れていました。皆さんのQAによって変わります。</p>
+  <div class="later"><b>S5で見ること</b>　どのQAが何点で返るか、言い回しを変えても引けるかを試してください。</div>
+</section>
+
+<section id="tool">
+  <h2><span class="num">4</span>ツール呼び出し：説明を読んで、呼ぶかどうかを決める</h2>
+  <p>エージェントには、Pythonの関数を「ツール」として渡せます。LLMは関数の中身のコードを読みません。読むのは、関数の名前、引数とその型、docstring（説明文）だけです。それを読んで、この質問に答えるのにツールを呼ぶべきかを、LLMが自分で決めます。</p>
+
+  <h3>たとえば、こんな関数を渡すと</h3>
+  <pre><code>def get_menu(day: str) -&gt; dict:
+    """指定した曜日の学食のメニューを返す。学食や昼ごはんについて聞かれたときに使う。
+
+    Args:
+        day: 曜日。「月」「火」のように1文字で渡す。
+    """
+    ...</code></pre>
+  <h3>LLMに見えているのは、これだけです</h3>
+  <pre><code>名前:   get_menu
+説明:   指定した曜日の学食のメニューを返す。学食や昼ごはんについて聞かれたときに使う。
+引数:   day（文字列）  曜日。「月」「火」のように1文字で渡す。</code></pre>
+
+  <svg viewBox="0 0 820 150" role="img" aria-label="LLMがツールを呼び、その結果を読んで回答する流れ">
+    <rect x="10" y="50" width="130" height="50" rx="8" class="box"/>
+    <text x="75" y="80" text-anchor="middle">質問</text>
+    <rect x="190" y="50" width="150" height="50" rx="8" class="box-accent"/>
+    <text x="265" y="80" text-anchor="middle">LLM</text>
+    <rect x="400" y="5" width="180" height="50" rx="8" class="box"/>
+    <text x="490" y="27" text-anchor="middle">呼ぶと決めたら</text>
+    <text x="490" y="46" text-anchor="middle" class="muted" font-size="13">関数を実行して結果を返す</text>
+    <rect x="400" y="95" width="180" height="50" rx="8" class="box"/>
+    <text x="490" y="117" text-anchor="middle">呼ばないと決めたら</text>
+    <text x="490" y="136" text-anchor="middle" class="muted" font-size="13">そのまま答える</text>
+    <rect x="640" y="50" width="170" height="50" rx="8" class="box-warm"/>
+    <text x="725" y="80" text-anchor="middle">回答</text>
+    <line x1="140" y1="75" x2="186" y2="75" class="arrow" marker-end="url(#ah)"/>
+    <line x1="340" y1="65" x2="396" y2="32" class="arrow" marker-end="url(#ah)"/>
+    <line x1="340" y1="85" x2="396" y2="118" class="arrow" marker-end="url(#ah)"/>
+    <line x1="580" y1="32" x2="636" y2="65" class="arrow" marker-end="url(#ah)"/>
+    <line x1="580" y1="118" x2="636" y2="85" class="arrow" marker-end="url(#ah)"/>
+  </svg>
+  <div class="point">説明文の書き方しだいで、ツールは呼ばれたり呼ばれなかったりします。「何をするツールか」と「いつ使うか」を書いておくと、LLMが判断しやすくなります。</div>
+  <div class="later"><b>S6でやること</b>　S5で試した検索を関数にして、エージェントにツールとして渡します。<code>my_agent/agent.py</code> のTODOと、ADKのドキュメントのツールのページを読んで、自分の手で書いてください。</div>
+</section>
+
+<footer>
+  <p>このページは配布リポジトリの <code>docs/shikumi.html</code> です。あとから見直すときも、ブラウザで開けば読めます。</p>
+</footer>
+</main>
+
+<script>
+(function () {
+  // 1. LLM: 次の言葉を確率で選ぶ（数字は説明用）
+  var candidates = [
+    { word: "仲間と", p: 0.42 },
+    { word: "学費が", p: 0.27 },
+    { word: "自分で", p: 0.19 },
+    { word: "24時間", p: 0.12 }
+  ];
+  var bars = document.getElementById("bars");
+  candidates.forEach(function (c) {
+    var row = document.createElement("div");
+    row.className = "bar-row";
+    row.innerHTML = '<span>「' + c.word + '」</span>' +
+      '<span class="bar-track"><span class="bar" style="display:block;width:' + (c.p * 100 / 0.42 * 0.95) + '%"></span></span>' +
+      '<span>' + Math.round(c.p * 100) + '%</span>';
+    bars.appendChild(row);
+  });
+  var picked = document.getElementById("picked");
+  var history = document.getElementById("history");
+  var log = [];
+  function pick() {
+    var r = Math.random(), acc = 0, chosen = candidates[candidates.length - 1];
+    for (var i = 0; i < candidates.length; i++) {
+      acc += candidates[i].p;
+      if (r < acc) { chosen = candidates[i]; break; }
+    }
+    picked.textContent = chosen.word + "…";
+    log.push(chosen.word);
+    history.textContent = "これまでに選ばれた言葉: " + log.join("、");
+  }
+  document.getElementById("pick").addEventListener("click", pick);
+  document.getElementById("reset").addEventListener("click", function () {
+    log = [];
+    picked.textContent = "…";
+    history.textContent = "";
+  });
+
+  // 3. ベクトル検索: 2次元のたとえ。角度（度）で向きを決め、点数はコサイン類似度
+  var qas = [
+    { text: "授業料はかかりますか？", deg: 20 },
+    { text: "働きながら学べますか？", deg: 50 },
+    { text: "社会人でも入学できますか？", deg: 80 },
+    { text: "42の一番の魅力は？", deg: 140 },
+    { text: "今日のハンズオンの合言葉は？", deg: 165 }
+  ];
+  var queries = [
+    { text: "学費はいくら？", deg: 25 },
+    { text: "仕事を辞めずに通える？", deg: 52 },
+    { text: "42の良いところを教えて", deg: 135 }
+  ];
+  var cx = 390, cy = 260, R = 180;
+  var plot = document.getElementById("plot");
+  var ranking = document.getElementById("ranking");
+  var NS = "http://www.w3.org/2000/svg";
+  function rad(d) { return d * Math.PI / 180; }
+  function el(name, attrs, text) {
+    var e = document.createElementNS(NS, name);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (text) e.textContent = text;
+    return e;
+  }
+  function draw(q) {
+    while (plot.firstChild) plot.removeChild(plot.firstChild);
+    plot.appendChild(el("circle", { cx: cx, cy: cy, r: 3, "class": "arrowhead" }));
+    qas.forEach(function (a) {
+      var x = cx + R * Math.cos(rad(a.deg)), y = cy - R * Math.sin(rad(a.deg));
+      plot.appendChild(el("line", { x1: cx, y1: cy, x2: x, y2: y, "class": "arrow", "stroke-dasharray": "4 4" }));
+      plot.appendChild(el("circle", { cx: x, cy: y, r: 6, fill: "var(--accent)" }));
+      var anchor = a.deg > 90 ? "end" : "start";
+      var dx = a.deg > 90 ? -10 : 10;
+      plot.appendChild(el("text", { x: x + dx, y: y + 5, "text-anchor": anchor, "font-size": 14 }, a.text));
+    });
+    if (!q) return;
+    var qx = cx + R * 0.6 * Math.cos(rad(q.deg)), qy = cy - R * 0.6 * Math.sin(rad(q.deg));
+    plot.appendChild(el("line", { x1: cx, y1: cy, x2: qx, y2: qy, stroke: "var(--warm)", "stroke-width": 3 }));
+    plot.appendChild(el("circle", { cx: qx, cy: qy, r: 7, fill: "var(--warm)" }));
+    var scored = qas.map(function (a) {
+      return { text: a.text, score: Math.cos(rad(a.deg - q.deg)) };
+    }).sort(function (a, b) { return b.score - a.score; });
+    ranking.innerHTML = "";
+    scored.slice(0, 3).forEach(function (s, i) {
+      var tr = document.createElement("tr");
+      tr.innerHTML = "<td>" + (i + 1) + "</td><td class=\"score\">" + s.score.toFixed(3) + "</td><td>" + s.text + "</td>";
+      ranking.appendChild(tr);
+    });
+  }
+  var qbox = document.getElementById("queries");
+  queries.forEach(function (q, i) {
+    var b = document.createElement("button");
+    b.className = i === 0 ? "" : "ghost";
+    b.textContent = "「" + q.text + "」";
+    b.addEventListener("click", function () {
+      Array.prototype.forEach.call(qbox.children, function (c) { c.className = "ghost"; });
+      b.className = "";
+      draw(q);
+    });
+    qbox.appendChild(b);
+  });
+  draw(queries[0]);
+})();
+</script>
+</body>
+</html>
