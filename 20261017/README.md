@@ -39,7 +39,6 @@ docker compose build
 | `register.py`、`search.py`、`ask.py` | 上のコマンド | 使う |
 | `lib/rag.py` | QAの登録と検索。S6では `search(query, k)` を使う | 触らない |
 | `lib/model.py`、`lib/runner.py`、`lib/cli.py` | モデルの呼び出しと、エージェントの実行 | 触らない |
-| `claude-settings.example.json` | Claude Code の設定のひな形。当日は `settings.json` として配る | 使う |
 
 QAの書き方は [data/README.md](data/README.md) にあります。
 
