@@ -6,7 +6,7 @@
 | :-- | :-- | :-- |
 | `shakaijin_qa.csv` | 運営が用意した、社会人向けのメリットのQA（42 Tokyoの公式サイトの情報から作成） | 触らない |
 | `my_qa.csv` | あなたが書く42の魅力QA。`question,answer` の2列 | **ここに書く** |
-| `secret_qa.csv` | 当日配る固有QA。配られたらここに置く | 置くだけ |
+| `secret_qa.csv` | 当日配る固有QA。S5で `ops/sample_secret_qa.csv` をここにコピーする | コピーするだけ |
 
 `my_qa.csv` の書き方の例:
 
