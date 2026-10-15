@@ -1,9 +1,0 @@
-.env
-.venv/
-out/
-submissions/
-__pycache__/
-.pytest_cache/
-# 配布しないもの。当日はボリュームで /app に見える
-ops/
-tests/
