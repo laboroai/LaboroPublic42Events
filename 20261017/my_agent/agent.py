@@ -9,6 +9,7 @@ from google.adk.agents import Agent
 from lib.model import get_model
 
 # TODO(S6): 登録したQAを検索するツールを作り、エージェントにつなぐ。
+#   書き方はADKのドキュメント（Function tools）を読む: https://adk.dev/tools-custom/function-tools/
 #   - ツールはふつうのPython関数でよい。引数と戻り値に型を書く
 #   - docstring に「何をするツールか、いつ使うか」を書く。LLMはそれを読んで、呼ぶかどうかを決める
 #   - QAの検索には lib.rag の search(query, k) が使える（S5で試した検索と同じもの）
