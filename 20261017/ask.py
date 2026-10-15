@@ -1,7 +1,7 @@
-"""エージェントに1問答えさせる（S6、S7、S9）。呼ばれたツールと、引けたQAの点数も表示する。
+"""エージェントに1問答えさせる（S6、S7、S8）。呼ばれたツールと、引けたQAの点数も表示する。
 
   python ask.py "質問"
-  python ask.py --save "質問"      回答を out/answers.jsonl に残す（S7、S9）
+  python ask.py --save "質問"      回答を out/answers.jsonl に残す（S7、S8）
 """
 
 import argparse
