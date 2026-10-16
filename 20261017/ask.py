@@ -1,4 +1,7 @@
-"""エージェントに1問答えさせる（S6、S7、S8）。呼ばれたツールと、引けたQAの点数も表示する。
+"""エージェントに1問答えさせる（S6、S7、S8）。
+
+「[1] 調べる → [2] 引けた資料 → [3] 回答」の3段で表示する。エージェントが何を調べ、
+どの資料をもとに答えたかを、上から順にたどれる。
 
   python ask.py "質問"
   python ask.py --save "質問"      回答を out/answers.jsonl に残す（S7、S8）
@@ -23,12 +26,22 @@ def main():
     args = parser.parse_args()
 
     result = ask(load_agent(args.agent), args.question)
-    if not result["tool_calls"]:
-        print("[ツール] 呼ばれていません")
-    for call in result["tool_calls"]:
-        print(f"[ツール] {call['name']}({json.dumps(call['args'], ensure_ascii=False)})")
-        show_response(call["response"])
-    print()
+    calls = result["tool_calls"]
+
+    print("[1] 調べる: エージェントが呼んだツール")
+    if not calls:
+        print("  呼ばれていません（LLMが、もともと知っていることだけで答えました）")
+    for call in calls:
+        print(f"  {call['name']}({json.dumps(call['args'], ensure_ascii=False)})")
+
+    if calls:
+        print("\n[2] 引けた資料: ツールが返したもの")
+        for call in calls:
+            if len(calls) > 1:
+                print(f"  ({call['name']} の結果)")
+            show_response(call["response"], answers=True)
+
+    print("\n[3] 回答: 引けた資料をもとに、LLMが書いた答え" if calls else "\n[3] 回答")
     print(result["answer"])
 
     if args.save:

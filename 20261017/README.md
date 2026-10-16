@@ -53,7 +53,7 @@ docker compose exec app bash   # コンテナの中に入る
 | S5 | `cp ops/sample_secret_qa.csv data/secret_qa.csv` | 固有QAを足す。足したら `register.py` をやり直す |
 | S6 | `python try_tool.py` | つないだツールの一覧と、LLMに見えている説明（名前、説明文、引数）を出す |
 | S6 | `python try_tool.py ツール名 引数` | LLMを通さずに、ツールの関数だけを呼んで戻り値を出す。例: `python try_tool.py search_qa "合言葉"` |
-| S6 | `python ask.py "質問"` | エージェントに1問答えさせる。呼ばれたツール、その戻り値、検索で引けたQAの点数とファイル名も出る。ツールがつながったかは、`secret_qa.csv` にある質問で確かめる |
+| S6 | `python ask.py "質問"` | エージェントに1問答えさせる。「[1] 調べる（呼ばれたツール）→ [2] 引けた資料（点数、ファイル名、答えの書き出し）→ [3] 回答」の3段で出る。ツールがつながったかは、`secret_qa.csv` にある質問で確かめる |
 | S7、S8 | `python ask.py --save "質問"` | 回答を `out/answers.jsonl` に追記する |
 
 キーが設定されていないときや、QAを登録する前に検索したときは、次に何をすればよいかを表示して止まります。CSVを書き直したら、もう一度 `python register.py` を実行してください。

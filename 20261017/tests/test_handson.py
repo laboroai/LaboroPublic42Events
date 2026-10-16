@@ -165,3 +165,24 @@ def test_try_tool_explains_missing_hits_for_text_results(monkeypatch, capsys):
     out = _try_tool(monkeypatch, capsys, "--agent", "tests.tool_agent", "plain_text", "合言葉")
     assert '"result": "結果: 合言葉"' in out
     assert "そのまま返すと表示されます" in out
+
+
+def test_ask_shows_search_materials_and_answer_in_order(monkeypatch, capsys):
+    import ask as ask_cmd
+
+    monkeypatch.setattr(sys, "argv", ["ask.py", "--agent", "tests.tool_agent", "合言葉"])
+    ask_cmd.main()
+    out = capsys.readouterr().out
+    assert out.index("[1] 調べる") < out.index("[2] 引けた資料") < out.index("[3] 回答")
+    assert 'fake_search({"query": "合言葉"})' in out
+    assert "答え: 試験" in out
+
+
+def test_ask_without_tools_says_the_llm_answered_alone(monkeypatch, capsys):
+    import ask as ask_cmd
+
+    monkeypatch.setattr(sys, "argv", ["ask.py", "こんにちは"])
+    ask_cmd.main()
+    out = capsys.readouterr().out
+    assert "もともと知っていることだけで答えました" in out
+    assert "[2] 引けた資料" not in out
