@@ -28,20 +28,14 @@ def is_mock() -> bool:
     return os.getenv("HANDSON_MOCK") == "1"
 
 
-def provider() -> str:
-    """APIの呼び先。openai（既定）か bedrock。"""
-    return os.getenv("HANDSON_PROVIDER", "openai")
-
-
 def api_key_name() -> str:
-    return "AWS_BEARER_TOKEN_BEDROCK" if provider() == "bedrock" else "OPENAI_API_KEY"
+    return "OPENAI_API_KEY"
 
 
 def embed_model() -> str:
     if is_mock():
         return "mock"
-    default = "amazon.titan-embed-text-v2:0" if provider() == "bedrock" else "text-embedding-3-small"
-    return os.getenv("HANDSON_EMBED_MODEL", default)
+    return os.getenv("HANDSON_EMBED_MODEL", "text-embedding-3-small")
 
 
 def qa_files(data: Path | None = None) -> list[Path]:
@@ -76,15 +70,6 @@ def _mock_embed(text: str) -> np.ndarray:
     return v
 
 
-def _bedrock_embed(text: str) -> list[float]:
-    """BedrockのTitan Text Embeddings V2でベクトルにする。認証は AWS_BEARER_TOKEN_BEDROCK を使う。"""
-    import boto3
-
-    client = boto3.client("bedrock-runtime", region_name=os.getenv("AWS_REGION", "ap-northeast-1"))
-    res = client.invoke_model(modelId=embed_model(), body=json.dumps({"inputText": text}))
-    return json.loads(res["body"].read())["embedding"]
-
-
 def _openai_embed(texts: list[str]) -> list[list[float]]:
     """OpenAIの埋め込みAPIでベクトルにする。認証は OPENAI_API_KEY を使う。"""
     from openai import OpenAI
@@ -97,8 +82,6 @@ def embed(texts: list[str]) -> np.ndarray:
     """文章をベクトルにする。長さ1に正規化して返す。"""
     if is_mock():
         vectors = np.array([_mock_embed(t) for t in texts])
-    elif provider() == "bedrock":
-        vectors = np.array([_bedrock_embed(t) for t in texts])
     else:
         vectors = np.array(_openai_embed(texts))
     norms = np.linalg.norm(vectors, axis=1, keepdims=True)

@@ -1,5 +1,6 @@
 """コマンドの共通処理（触らない）。"""
 
+import json
 import os
 import sys
 
@@ -36,3 +37,25 @@ def print_hits(hits: list[dict]):
     """検索結果を「点数・ファイル・質問」の表にして出す。"""
     for rank, h in enumerate(hits, 1):
         print(f"  {rank}. {h['score']:.3f}  {h['source']:<16}  {h['question']}")
+
+
+def find_hits(value) -> list[dict]:
+    """ツールの結果の中から、検索で引けたQA（score と source を持つもの）を探す。"""
+    if isinstance(value, dict):
+        if "score" in value and "source" in value:
+            return [value]
+        return [h for v in value.values() for h in find_hits(v)]
+    if isinstance(value, list):
+        return [h for v in value for h in find_hits(v)]
+    return []
+
+
+def show_response(response, limit: int = 400):
+    """ツールの戻り値をそのまま出し、引けたQAがあれば点数とファイル名の表も出す。"""
+    text = json.dumps(response, ensure_ascii=False, default=str)
+    print(f"  [戻り値] {text[:limit]}{' …（以下略）' if len(text) > limit else ''}")
+    hits = find_hits(response)
+    if hits:
+        print_hits(hits)
+    else:
+        print("  （点数とファイル名を持つQAが見つかりません。search の結果を文字列にせず、そのまま返すと表示されます）")

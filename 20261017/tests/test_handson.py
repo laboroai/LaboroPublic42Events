@@ -88,7 +88,7 @@ def _run(*args, env=None):
 
 
 def test_commands_stop_with_a_message_when_key_is_missing():
-    res = _run("search.py", "授業料", env={"HANDSON_MOCK": "0", "HANDSON_PROVIDER": "openai", "OPENAI_API_KEY": ""})
+    res = _run("search.py", "授業料", env={"HANDSON_MOCK": "0", "OPENAI_API_KEY": ""})
     assert res.returncode == 2
     assert "OPENAI_API_KEY" in res.stderr
 
@@ -110,7 +110,6 @@ def test_real_model_calls_openai(monkeypatch):
     from lib import model
 
     monkeypatch.setenv("HANDSON_MOCK", "0")
-    monkeypatch.delenv("HANDSON_PROVIDER", raising=False)
     monkeypatch.delenv("HANDSON_MODEL", raising=False)
     monkeypatch.delenv("HANDSON_REASONING_EFFORT", raising=False)
     monkeypatch.setenv("OPENAI_API_KEY", "dummy")
@@ -131,7 +130,6 @@ def test_real_embedding_uses_openai(monkeypatch):
             return SimpleNamespace(data=[SimpleNamespace(embedding=[3.0, 4.0]) for _ in input])
 
     monkeypatch.setenv("HANDSON_MOCK", "0")
-    monkeypatch.delenv("HANDSON_PROVIDER", raising=False)
     monkeypatch.delenv("HANDSON_EMBED_MODEL", raising=False)
     monkeypatch.setattr(openai, "OpenAI", lambda: SimpleNamespace(embeddings=FakeEmbeddings()))
     vectors = rag.embed(["42の魅力"])
@@ -139,36 +137,31 @@ def test_real_embedding_uses_openai(monkeypatch):
     assert vectors.tolist() == [[0.6, 0.8]]
 
 
-def test_bedrock_model_uses_openai_compatible_endpoint(monkeypatch):
-    from lib import model
+def _try_tool(monkeypatch, capsys, *argv):
+    import try_tool
 
-    monkeypatch.setenv("HANDSON_MOCK", "0")
-    monkeypatch.setenv("HANDSON_PROVIDER", "bedrock")
-    monkeypatch.delenv("HANDSON_REASONING_EFFORT", raising=False)
-    monkeypatch.setenv("AWS_BEARER_TOKEN_BEDROCK", "dummy")
-    monkeypatch.delenv("HANDSON_MODEL", raising=False)
-    llm = model.get_model()
-    assert llm.model == "openai/global.openai.gpt-5.6-terra"
-    assert llm._additional_args["api_base"] == "https://bedrock-runtime.ap-northeast-1.amazonaws.com/openai/v1"
-    assert llm._additional_args["reasoning_effort"] == "none"
+    monkeypatch.setattr(sys, "argv", ["try_tool.py", *argv])
+    try_tool.main()
+    return capsys.readouterr().out
 
 
-def test_bedrock_embedding_uses_titan(monkeypatch):
-    import io
+def test_try_tool_without_tools_tells_what_to_do(monkeypatch, capsys):
+    assert "tools=[...]" in _try_tool(monkeypatch, capsys)
 
-    import boto3
 
-    calls = []
+def test_try_tool_lists_what_the_llm_sees(monkeypatch, capsys):
+    out = _try_tool(monkeypatch, capsys, "--agent", "tests.tool_agent")
+    assert "[ツール] fake_search" in out
+    assert "質問をそのまま" in out
+    assert "引数: k（integer）" in out
 
-    class FakeClient:
-        def invoke_model(self, modelId, body):
-            calls.append((modelId, json.loads(body)))
-            return {"body": io.BytesIO(json.dumps({"embedding": [3.0, 4.0]}).encode())}
 
-    monkeypatch.setenv("HANDSON_MOCK", "0")
-    monkeypatch.setenv("HANDSON_PROVIDER", "bedrock")
-    monkeypatch.delenv("HANDSON_EMBED_MODEL", raising=False)
-    monkeypatch.setattr(boto3, "client", lambda service, region_name: FakeClient())
-    vectors = rag.embed(["42の魅力"])
-    assert calls == [("amazon.titan-embed-text-v2:0", {"inputText": "42の魅力"})]
-    assert vectors.tolist() == [[0.6, 0.8]]
+def test_try_tool_calls_the_function_with_typed_args(monkeypatch, capsys):
+    out = _try_tool(monkeypatch, capsys, "--agent", "tests.tool_agent", "fake_search", "合言葉", "2")
+    assert out.count("0.500  test.csv") == 2
+
+
+def test_try_tool_explains_missing_hits_for_text_results(monkeypatch, capsys):
+    out = _try_tool(monkeypatch, capsys, "--agent", "tests.tool_agent", "plain_text", "合言葉")
+    assert '"result": "結果: 合言葉"' in out
+    assert "そのまま返すと表示されます" in out

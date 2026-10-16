@@ -87,6 +87,16 @@
     border-radius: 0 6px 6px 0;
   }
   .later b { color: var(--warm); }
+  .tip {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin: 16px 0;
+    background: var(--bg);
+  }
+  .tip-title { font-size: 14px; font-weight: 700; color: var(--accent); margin-bottom: 2px; }
+  .next { margin-top: 20px; padding-top: 12px; border-top: 1px dashed var(--line); color: var(--muted); }
+  .next b { color: var(--text); }
   code, pre { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: 14px; }
   code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
   pre { background: var(--code-bg); padding: 12px 14px; border-radius: 6px; overflow-x: auto; line-height: 1.6; margin: 12px 0; }
@@ -134,8 +144,8 @@
 <header>
   <div class="step">S3 仕組みの説明</div>
   <h1>今日作るエージェントの中で、何が起きているか</h1>
-  <p>今日作るのは、質問を受けて、自分で書いたQAを探し、それをもとに答えるエージェントです。中では4つの仕組みが動いています。どれも、後半のS7とS8で起きることにつながります。</p>
-  <svg viewBox="0 0 820 130" role="img" aria-label="質問からQAの検索、エージェント、回答までの流れ">
+  <p>今日作るのは、質問を受けて、自分で書いたQAを調べ、それをもとに答えるエージェントです。中では3つの仕組みが、この順につながって動いています。どれも、後半のS6〜S8で起きることにつながります。</p>
+  <svg viewBox="0 0 820 130" role="img" aria-label="質問を受けたLLMが検索ツールを呼び、QAを調べて回答する流れ">
     <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="arrowhead"/></marker></defs>
     <rect x="10" y="40" width="120" height="50" rx="8" class="box"/>
     <text x="70" y="70" text-anchor="middle">質問</text>
@@ -144,13 +154,12 @@
     <text x="280" y="81" text-anchor="middle" class="muted" font-size="13">1. LLM</text>
     <rect x="430" y="10" width="170" height="50" rx="8" class="box-accent"/>
     <text x="515" y="32" text-anchor="middle">検索ツール</text>
-    <text x="515" y="51" text-anchor="middle" class="muted" font-size="13">4. ツール呼び出し</text>
+    <text x="515" y="51" text-anchor="middle" class="muted" font-size="13">2. ツール呼び出し</text>
     <rect x="640" y="10" width="170" height="50" rx="8" class="box-accent"/>
     <text x="725" y="32" text-anchor="middle">あなたのQA</text>
-    <text x="725" y="51" text-anchor="middle" class="muted" font-size="13">3. ベクトル検索</text>
+    <text x="725" y="51" text-anchor="middle" class="muted" font-size="13">3. RAG</text>
     <rect x="430" y="75" width="170" height="50" rx="8" class="box"/>
-    <text x="515" y="98" text-anchor="middle">回答</text>
-    <text x="515" y="117" text-anchor="middle" class="muted" font-size="13">2. RAG</text>
+    <text x="515" y="105" text-anchor="middle">回答</text>
     <line x1="130" y1="65" x2="176" y2="65" class="arrow" marker-end="url(#ah)"/>
     <line x1="380" y1="52" x2="426" y2="37" class="arrow" marker-end="url(#ah)"/>
     <line x1="600" y1="35" x2="636" y2="35" class="arrow" marker-end="url(#ah)"/>
@@ -159,9 +168,8 @@
   <nav>
     <ol>
       <li><a href="#llm">LLM：次の言葉を確率で選ぶ</a></li>
-      <li><a href="#rag">RAG：資料を渡して答えさせる</a></li>
-      <li><a href="#vector">ベクトル検索：意味の近さで探す</a></li>
-      <li><a href="#tool">ツール呼び出し：説明を読んで、呼ぶかどうかを決める</a></li>
+      <li><a href="#tool">ツール呼び出し（Function calling）：LLMが「この関数を呼ぶ」と決める</a></li>
+      <li><a href="#rag">RAG：検索をツールにして、必要なときに資料を取りに行く</a></li>
     </ol>
   </nav>
 </header>
@@ -181,39 +189,97 @@
   </div>
 
   <div class="later"><b>S8で見ること</b>　同じ質問をもう一度聞くと、前と同じ回答は返ってきません。言い回しが少し変わるだけでも、<code>assert answer == "..."</code> のようなテストは通りません。</div>
+
+  <!-- Tips（案）: Laboroの実体験に合わせて差し替える -->
+  <div class="tip">
+    <div class="tip-title">Laboroの現場から</div>
+    <p>仕事でLLMを使うときは、出力が毎回揺れる前提で作ります。揺れをゼロにする設定を探すより、揺れても困らない確かめ方（何を見ればOKとするか）を先に決めておくほうが、結果的に早く進みます。</p>
+  </div>
+
+  <p class="next"><b>次へ</b>　LLMは、学習した知識の中から言葉を選びます。今日の合言葉や、皆さんが書くQAのように、学習していないことは知りません。そこで、LLMに「外の情報を取りに行く手段」を渡します。それがツール呼び出しです。</p>
+</section>
+
+<section id="tool">
+  <h2><span class="num">2</span>ツール呼び出し（Function calling）：LLMが「この関数を呼ぶ」と決める</h2>
+  <p>エージェントには、Pythonの関数を「ツール」として渡せます。ただし、LLMが関数を実行するわけではありません。LLMがするのは、「この質問にはこの関数が要る」と決めて、関数に渡す引数を作るところまでです。関数を実行するのはプログラム（今日はADK）で、LLMはその結果を読んでから答えます。</p>
+
+  <svg viewBox="0 0 820 150" role="img" aria-label="LLMが関数を呼ぶと決め、プログラムが関数を実行し、その結果をLLMが読んで回答する流れ">
+    <rect x="10" y="50" width="120" height="50" rx="8" class="box"/>
+    <text x="70" y="80" text-anchor="middle">質問</text>
+    <rect x="170" y="50" width="170" height="50" rx="8" class="box-accent"/>
+    <text x="255" y="72" text-anchor="middle">LLM</text>
+    <text x="255" y="91" text-anchor="middle" class="muted" font-size="13">呼ぶ関数と引数を決める</text>
+    <rect x="380" y="5" width="190" height="50" rx="8" class="box"/>
+    <text x="475" y="27" text-anchor="middle">ADKが関数を実行</text>
+    <text x="475" y="46" text-anchor="middle" class="muted" font-size="13">戻り値をLLMに返す</text>
+    <rect x="380" y="95" width="190" height="50" rx="8" class="box-accent"/>
+    <text x="475" y="117" text-anchor="middle">LLM</text>
+    <text x="475" y="136" text-anchor="middle" class="muted" font-size="13">戻り値を読んで答える</text>
+    <rect x="630" y="95" width="180" height="50" rx="8" class="box-warm"/>
+    <text x="720" y="125" text-anchor="middle">回答</text>
+    <line x1="130" y1="75" x2="166" y2="75" class="arrow" marker-end="url(#ah)"/>
+    <line x1="340" y1="65" x2="376" y2="35" class="arrow" marker-end="url(#ah)"/>
+    <line x1="475" y1="55" x2="475" y2="91" class="arrow" marker-end="url(#ah)"/>
+    <line x1="570" y1="120" x2="626" y2="120" class="arrow" marker-end="url(#ah)"/>
+  </svg>
+
+  <p>LLMは関数の中身のコードを読みません。読むのは、関数の名前、引数とその型、docstring（説明文）だけです。それを読んで、この質問に答えるのにツールを呼ぶべきかを決めます。</p>
+
+  <h3>たとえば、こんな関数を渡すと</h3>
+  <pre><code>def get_menu(day: str) -&gt; dict:
+    """指定した曜日の学食のメニューを返す。学食や昼ごはんについて聞かれたときに使う。
+
+    Args:
+        day: 曜日。「月」「火」のように1文字で渡す。
+    """
+    ...</code></pre>
+  <h3>LLMに見えているのは、これだけです</h3>
+  <pre><code>名前:   get_menu
+説明:   指定した曜日の学食のメニューを返す。学食や昼ごはんについて聞かれたときに使う。
+引数:   day（文字列）  曜日。「月」「火」のように1文字で渡す。</code></pre>
+  <p>「火曜の学食は？」と聞かれると、LLMは <code>get_menu(day="火")</code> を呼ぶと決めます。「こんにちは」には呼びません。</p>
+
+  <div class="point">説明文の書き方しだいで、ツールは呼ばれたり呼ばれなかったりします。「何をするツールか」と「いつ使うか」を書いておくと、LLMが判断しやすくなります。</div>
+
+  <div class="later"><b>S6で使うコマンド</b>　<code>python try_tool.py</code> で、つないだツールがLLMにどう見えているかを確かめられます。<code>python try_tool.py ツール名 引数</code> とすると、LLMを通さずに関数だけを呼んで、戻り値を見られます。うまく動かないときは、関数とLLMのどちらに原因があるかを、ここで切り分けてください。</div>
+
+  <!-- Tips（案）: Laboroの実体験に合わせて差し替える -->
+  <div class="tip">
+    <div class="tip-title">Laboroの現場から</div>
+    <p>ツールの名前と説明文は、LLMが読む仕様書です。ツールが呼ばれないときは、まずプロンプトより先に説明文を疑います。人が読んでも「いつ使うか」が分からない説明は、LLMにも伝わりません。</p>
+  </div>
+
+  <p class="next"><b>次へ</b>　では、LLMに渡すツールが「QAを検索する関数」だったらどうなるでしょう。LLMは、知らないことを聞かれたときに自分で検索を呼び、見つかったQAをもとに答えるようになります。これが今日作るエージェントで、RAGと呼ばれる考え方の一つです。</p>
 </section>
 
 <section id="rag">
-  <h2><span class="num">2</span>RAG：資料を渡して答えさせる</h2>
-  <p>RAG（検索拡張生成）は、質問に関係しそうな資料を先に探し、その資料と質問をいっしょにLLMへ渡して答えさせる仕組みです。今日の資料は、皆さんが書くQAです。</p>
-  <svg viewBox="0 0 820 170" role="img" aria-label="質問で検索してQAを取り出し、質問とQAをLLMに渡して回答を作る流れ">
+  <h2><span class="num">3</span>RAG：検索をツールにして、必要なときに資料を取りに行く</h2>
+  <p>RAG（検索拡張生成）は、資料を検索して、見つかった内容をもとにLLMに答えさせる考え方です。よく知られた形は、質問が来たら必ず先に検索し、その結果を質問といっしょにLLMへ渡すものです。</p>
+  <p>今日のエージェントは少し違います。検索はツールの一つで、検索するかどうか、何という言葉で検索するかを、LLMが自分で決めます。「こんにちは」には検索せずに答え、合言葉を聞かれたら検索します。必要なときに、エージェントが自分で資料を取りに行く形です。</p>
+
+  <svg viewBox="0 0 820 170" role="img" aria-label="LLMが検索ツールを呼び、QAを取ってきて、それをもとに回答する流れ">
     <rect x="10" y="60" width="120" height="50" rx="8" class="box"/>
     <text x="70" y="90" text-anchor="middle">質問</text>
-    <rect x="180" y="10" width="160" height="50" rx="8" class="box-accent"/>
-    <text x="260" y="40" text-anchor="middle">QAを検索</text>
-    <rect x="390" y="10" width="160" height="50" rx="8" class="box"/>
-    <text x="470" y="32" text-anchor="middle">見つかったQA</text>
-    <text x="470" y="51" text-anchor="middle" class="muted" font-size="13">上位3件</text>
-    <rect x="390" y="100" width="160" height="60" rx="8" class="box-accent"/>
-    <text x="470" y="126" text-anchor="middle">LLM</text>
-    <text x="470" y="146" text-anchor="middle" class="muted" font-size="13">質問＋QAを読む</text>
-    <rect x="610" y="100" width="200" height="60" rx="8" class="box-warm"/>
-    <text x="710" y="126" text-anchor="middle">回答</text>
-    <text x="710" y="146" text-anchor="middle" class="muted" font-size="13">QA＋LLMがもともと知っていること</text>
-    <line x1="130" y1="78" x2="176" y2="42" class="arrow" marker-end="url(#ah)"/>
-    <line x1="340" y1="35" x2="386" y2="35" class="arrow" marker-end="url(#ah)"/>
-    <line x1="470" y1="60" x2="470" y2="96" class="arrow" marker-end="url(#ah)"/>
-    <line x1="130" y1="95" x2="386" y2="128" class="arrow" marker-end="url(#ah)"/>
-    <line x1="550" y1="130" x2="606" y2="130" class="arrow" marker-end="url(#ah)"/>
+    <rect x="170" y="60" width="170" height="50" rx="8" class="box-accent"/>
+    <text x="255" y="82" text-anchor="middle">LLM</text>
+    <text x="255" y="101" text-anchor="middle" class="muted" font-size="13">検索が要るかを決める</text>
+    <rect x="390" y="10" width="170" height="50" rx="8" class="box-accent"/>
+    <text x="475" y="32" text-anchor="middle">検索ツール</text>
+    <text x="475" y="51" text-anchor="middle" class="muted" font-size="13">意味の近いQAを探す</text>
+    <rect x="610" y="10" width="200" height="50" rx="8" class="box"/>
+    <text x="710" y="32" text-anchor="middle">見つかったQA</text>
+    <text x="710" y="51" text-anchor="middle" class="muted" font-size="13">点数とファイル名つき</text>
+    <rect x="610" y="110" width="200" height="50" rx="8" class="box-warm"/>
+    <text x="710" y="132" text-anchor="middle">回答</text>
+    <text x="710" y="151" text-anchor="middle" class="muted" font-size="13">QA＋LLMがもともと知っていること</text>
+    <line x1="130" y1="85" x2="166" y2="85" class="arrow" marker-end="url(#ah)"/>
+    <line x1="340" y1="75" x2="386" y2="40" class="arrow" marker-end="url(#ah)"/>
+    <line x1="560" y1="35" x2="606" y2="35" class="arrow" marker-end="url(#ah)"/>
+    <line x1="710" y1="60" x2="710" y2="106" class="arrow" marker-end="url(#ah)"/>
   </svg>
-  <div class="point">LLMは、渡された資料だけで答えるとは限りません。もともと知っていることも混ぜて答えます。QAに書いていないことが、もっともらしく回答に入ることがあります。</div>
-  <div class="later"><b>S7で見ること</b>　回答を公式サイトに載せてよいかを判定するとき、その一文がQAから来たのか、LLMが足したのかを見てください。判定が割れる理由の一つになります。</div>
-</section>
 
-<section id="vector">
-  <h2><span class="num">3</span>ベクトル検索：意味の近さで探す</h2>
-  <p>検索は、言葉が一致するかではなく、意味が近いかで探します。そのために、文章を数の並び（ベクトル）に変えます。今日使う埋め込みモデル（<code>text-embedding-3-small</code>）では、1つの文章が1536個の数になります。</p>
-  <p>意味の近い文章は、ベクトルの向きが近くなります。向きの近さを点数にしたのが、S5の検索コマンドに出る点数です。1に近いほど、意味が近いことを表します。</p>
+  <h3>検索の中身：意味の近さで探す</h3>
+  <p>検索ツールの中では、言葉が一致するかではなく、意味が近いかで探しています。そのために、文章を数の並び（ベクトル）に変えます。今日使う埋め込みモデル（<code>text-embedding-3-small</code>）では、1つの文章が1536個の数になります。意味の近い文章はベクトルの向きが近くなり、その近さを点数にしたのが、S5の検索コマンドに出る点数です。1に近いほど、意味が近いことを表します。</p>
 
   <div class="demo">
     <div class="demo-title">ためしてみる（2次元に縮めたたとえです。本物は1536次元）</div>
@@ -232,47 +298,15 @@
   1. 0.829  secret_qa.csv     今日のハンズオンの合言葉は？
   ...</code></pre>
   <p class="note">点数は10/9に本物の埋め込みモデルで試したときの値です。このとき2位は0.115で、1位と大きく離れていました。皆さんのQAによって変わります。</p>
-  <div class="later"><b>S5で見ること</b>　どのQAが何点で返るか、言い回しを変えても引けるかを試してください。</div>
-</section>
 
-<section id="tool">
-  <h2><span class="num">4</span>ツール呼び出し：説明を読んで、呼ぶかどうかを決める</h2>
-  <p>エージェントには、Pythonの関数を「ツール」として渡せます。LLMは関数の中身のコードを読みません。読むのは、関数の名前、引数とその型、docstring（説明文）だけです。それを読んで、この質問に答えるのにツールを呼ぶべきかを、LLMが自分で決めます。</p>
+  <div class="point">LLMは、見つかったQAだけで答えるとは限りません。もともと知っていることも混ぜて答えます。QAに書いていないことが、もっともらしく回答に入ることがあります。</div>
+  <div class="later"><b>S5〜S7で見ること</b>　S5では、どのQAが何点で返るか、言い回しを変えても引けるかを試します。S6では、この検索をツールにしてエージェントにつなぎます。S7で回答を判定するときは、その一文がQAから来たのか、LLMが足したのかを見てください。判定が割れる理由の一つになります。</div>
 
-  <h3>たとえば、こんな関数を渡すと</h3>
-  <pre><code>def get_menu(day: str) -&gt; dict:
-    """指定した曜日の学食のメニューを返す。学食や昼ごはんについて聞かれたときに使う。
-
-    Args:
-        day: 曜日。「月」「火」のように1文字で渡す。
-    """
-    ...</code></pre>
-  <h3>LLMに見えているのは、これだけです</h3>
-  <pre><code>名前:   get_menu
-説明:   指定した曜日の学食のメニューを返す。学食や昼ごはんについて聞かれたときに使う。
-引数:   day（文字列）  曜日。「月」「火」のように1文字で渡す。</code></pre>
-
-  <svg viewBox="0 0 820 150" role="img" aria-label="LLMがツールを呼び、その結果を読んで回答する流れ">
-    <rect x="10" y="50" width="130" height="50" rx="8" class="box"/>
-    <text x="75" y="80" text-anchor="middle">質問</text>
-    <rect x="190" y="50" width="150" height="50" rx="8" class="box-accent"/>
-    <text x="265" y="80" text-anchor="middle">LLM</text>
-    <rect x="400" y="5" width="180" height="50" rx="8" class="box"/>
-    <text x="490" y="27" text-anchor="middle">呼ぶと決めたら</text>
-    <text x="490" y="46" text-anchor="middle" class="muted" font-size="13">関数を実行して結果を返す</text>
-    <rect x="400" y="95" width="180" height="50" rx="8" class="box"/>
-    <text x="490" y="117" text-anchor="middle">呼ばないと決めたら</text>
-    <text x="490" y="136" text-anchor="middle" class="muted" font-size="13">そのまま答える</text>
-    <rect x="640" y="50" width="170" height="50" rx="8" class="box-warm"/>
-    <text x="725" y="80" text-anchor="middle">回答</text>
-    <line x1="140" y1="75" x2="186" y2="75" class="arrow" marker-end="url(#ah)"/>
-    <line x1="340" y1="65" x2="396" y2="32" class="arrow" marker-end="url(#ah)"/>
-    <line x1="340" y1="85" x2="396" y2="118" class="arrow" marker-end="url(#ah)"/>
-    <line x1="580" y1="32" x2="636" y2="65" class="arrow" marker-end="url(#ah)"/>
-    <line x1="580" y1="118" x2="636" y2="85" class="arrow" marker-end="url(#ah)"/>
-  </svg>
-  <div class="point">説明文の書き方しだいで、ツールは呼ばれたり呼ばれなかったりします。「何をするツールか」と「いつ使うか」を書いておくと、LLMが判断しやすくなります。</div>
-  <div class="later"><b>S6でやること</b>　S5で試した検索を関数にして、エージェントにツールとして渡します。<code>my_agent/agent.py</code> のTODOと、ADKのドキュメントのツールのページを読んで、自分の手で書いてください。</div>
+  <!-- Tips（案）: Laboroの実体験に合わせて差し替える -->
+  <div class="tip">
+    <div class="tip-title">Laboroの現場から</div>
+    <p>回答がおかしいとき、原因はLLMより検索の側にあることがよくあります。直す前に、まず「何が引けていたか」を見ます。今日の <code>ask.py</code> が、呼ばれたツールと引けたQAの点数を毎回表示するのはそのためです。</p>
+  </div>
 </section>
 
 <footer>

@@ -1,13 +1,13 @@
 # タイムスケジュール
 
-2026年10月17日（土）、42 Tokyo AIエージェント開発ハンズオン。コマンドは、どれもリポジトリの `20261017/` で実行します。`python` で始まるコマンドは、`docker compose run --rm app` の後ろに付けます。
+2026年10月17日（土）、42 Tokyo AIエージェント開発ハンズオン。環境準備でコンテナの中に入ったあとは、コマンドをすべてコンテナの中で打ちます。
 
 | 時刻 | ステップ | すること |
 | :-- | :-- | :-- |
 | 14:00〜14:10 | チーム分け・確認 | 自分のチームを確かめ、チームの席に着く |
 | 14:10〜14:30 | S1 オープニング・環境準備 | リポジトリを取得してビルドを始め、待つあいだに趣旨を聞いてチームで自己紹介する。エージェントが返事をするのを確かめる |
 | 14:30〜14:40 | S2 お題とデモ | 42 Tokyoをお客さんに見立て、42 Tokyoの魅力を答える営業エージェントを作る、というお題を聞く |
-| 14:40〜14:55 | S3 仕組みの説明 | 説明ページを開き、LLM、RAG、ベクトル検索、ツール呼び出しの話を聞く |
+| 14:40〜14:55 | S3 仕組みの説明 | 説明ページを開き、LLM、ツール呼び出し、RAGの話を聞く |
 | 14:55〜15:15 | S4 QAを書く | 42の魅力QAを書く |
 | 15:15〜15:45 | S5 登録して検索する | QAを登録して検索する。途中で固有QAを足す |
 | 15:45〜15:55 | 休憩 | |
@@ -29,12 +29,21 @@ cd LaboroPublic42Events/20261017
 cp .env.example .env
 nano .env              # OPENAI_API_KEY= のあとにキーを貼る。Ctrl+O、Enter で保存、Ctrl+X で閉じる
 docker compose build
-docker compose run --rm app python ask.py "こんにちは"
+docker compose up -d
+docker compose exec app bash
 ```
 
-最後に返事が返れば準備完了です。
+最後のコマンドでコンテナの中に入り、プロンプトが `root@...:/app#` に変わります。ここで次を実行し、返事が返れば準備完了です。
+
+```bash
+python ask.py "こんにちは"
+```
+
+PCを再起動したときやターミナルを閉じたときは、`20261017/` で `docker compose up -d` と `docker compose exec app bash` をもう一度実行します。
 
 ### S3 仕組みの説明（14:40〜14:55）
+
+コンテナの外で開きます。もう一つターミナルを開き、`20261017/` で次を実行します。
 
 ```bash
 xdg-open docs/shikumi.html
@@ -55,16 +64,16 @@ xdg-open docs/shikumi.html
 ### S5 登録して検索する（15:15〜15:45）
 
 ```bash
-docker compose run --rm app python register.py
-docker compose run --rm app python search.py "質問"
+python register.py
+python search.py "質問"
 ```
 
 どのQAが何点で返るか、言い回しを変えても引けるかを試します。15:25ごろ、固有QAを足します。
 
 ```bash
 cp ops/sample_secret_qa.csv data/secret_qa.csv
-docker compose run --rm app python register.py
-docker compose run --rm app python search.py "今日のハンズオンの合言葉は？"
+python register.py
+python search.py "今日のハンズオンの合言葉は？"
 ```
 
 `secret_qa.csv` が1位に出れば成功です。
@@ -73,8 +82,17 @@ docker compose run --rm app python search.py "今日のハンズオンの合言�
 
 `my_agent/agent.py` のTODOに沿って、検索をツールにしてエージェントにつなぎます。書き方はADKのドキュメント（[Function tools](https://adk.dev/tools-custom/function-tools/)）を読んで、自分の手で書いてください。
 
+ツールを書いたら、まずLLMを通さずに、ツールの関数だけを確かめます。
+
 ```bash
-docker compose run --rm app python ask.py "今日のハンズオンの合言葉は？"
+python try_tool.py                              # つないだツールと、LLMに見えている説明
+python try_tool.py search_qa "今日のハンズオンの合言葉は？"   # 関数を直接呼んで戻り値を見る（search_qa は自分の関数名に）
+```
+
+関数が思いどおりの戻り値を返したら、エージェントに聞きます。
+
+```bash
+python ask.py "今日のハンズオンの合言葉は？"
 ```
 
 次の3つがそろえば合格です。
@@ -88,7 +106,7 @@ docker compose run --rm app python ask.py "今日のハンズオンの合言葉�
 ### S7 判定する（16:55〜17:10）
 
 ```bash
-docker compose run --rm app python ask.py --save "社会人ですが、42 Tokyoで学ぶ価値はありますか？"
+python ask.py --save "42 Tokyoで学ぶと、どんな力が身につきますか？"
 ```
 
 1回だけ聞いて、回答を画面でチームに見せます。チームで話し合う回答を2〜3個選び、「42 Tokyoの公式サイトに載せてOKか」を、一人ずつOKかNGかと理由を言って話し合います。
@@ -99,10 +117,10 @@ S7と同じコマンドを、もう一度だけ実行します。前の回答（
 
 ### S10 交流（17:35〜19:00）
 
-アンケートに答えたら、教室のPCから今日のリポジトリを消します。
+アンケートに答えたら、教室のPCから今日のリポジトリを消します。コンテナの中にいるときは、`exit` で抜けてから実行します。
 
 ```bash
-docker compose run --rm app sh -c 'rm -rf out .pytest_cache .mypy_cache && find . -name __pycache__ -prune -exec rm -rf {} +'
+docker compose exec app sh -c 'rm -rf out .pytest_cache .mypy_cache && find . -name __pycache__ -prune -exec rm -rf {} +'
 docker compose down --rmi all
 cd ../.. && rm -rf LaboroPublic42Events
 ```

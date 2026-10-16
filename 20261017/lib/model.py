@@ -9,11 +9,9 @@ from google.adk.models.llm_request import LlmRequest
 from google.adk.models.llm_response import LlmResponse
 from google.genai import types
 
-from lib.rag import provider
-
 
 def get_model():
-    """エージェントが使うLLMを返す。HANDSON_PROVIDER=openai（既定）はOpenAIのAPI、bedrock はBedrockのOpenAI互換APIで呼ぶ。"""
+    """エージェントが使うLLMを返す。OpenAIのAPIをLiteLLM経由で呼ぶ。"""
     if os.getenv("HANDSON_MOCK") == "1":
         return MockLlm(model="mock")
     import litellm
@@ -24,15 +22,6 @@ def get_model():
     kwargs = {}
     if os.getenv("HANDSON_REASONING_EFFORT"):
         kwargs["reasoning_effort"] = os.getenv("HANDSON_REASONING_EFFORT")
-    if provider() == "bedrock":
-        region = os.getenv("AWS_REGION", "ap-northeast-1")
-        return LiteLlm(
-            model="openai/" + os.getenv("HANDSON_MODEL", "global.openai.gpt-5.6-terra"),
-            api_base=f"https://bedrock-runtime.{region}.amazonaws.com/openai/v1",
-            api_key=os.getenv("AWS_BEARER_TOKEN_BEDROCK"),
-            # BedrockのChat Completionsでは、ツールと推論を同時に使えない。ツールを使うので推論を切る
-            **{"reasoning_effort": "none", **kwargs},
-        )
     return LiteLlm(
         model="openai/" + os.getenv("HANDSON_MODEL", "gpt-5.6-terra"),
         api_key=os.getenv("OPENAI_API_KEY"),

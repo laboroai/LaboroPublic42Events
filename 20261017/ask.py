@@ -9,21 +9,10 @@ import json
 from datetime import datetime
 from pathlib import Path
 
-from lib.cli import print_hits, run
+from lib.cli import run, show_response
 from lib.runner import ask, load_agent
 
 ANSWERS = Path(__file__).resolve().parent / "out" / "answers.jsonl"
-
-
-def find_hits(value) -> list[dict]:
-    """ツールの結果の中から、検索で引けたQA（score と source を持つもの）を探す。"""
-    if isinstance(value, dict):
-        if "score" in value and "source" in value:
-            return [value]
-        return [h for v in value.values() for h in find_hits(v)]
-    if isinstance(value, list):
-        return [h for v in value for h in find_hits(v)]
-    return []
 
 
 def main():
@@ -38,9 +27,7 @@ def main():
         print("[ツール] 呼ばれていません")
     for call in result["tool_calls"]:
         print(f"[ツール] {call['name']}({json.dumps(call['args'], ensure_ascii=False)})")
-        hits = find_hits(call["response"])
-        if hits:
-            print_hits(hits)
+        show_response(call["response"])
     print()
     print(result["answer"])
 
