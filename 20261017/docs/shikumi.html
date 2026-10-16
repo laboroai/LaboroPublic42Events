@@ -105,6 +105,9 @@
   .timeline .t-name { font-weight: 700; }
   .sources { font-size: 14px; color: var(--muted); }
   .sources li { margin: 2px 0; }
+  .compare th:first-child { width: 7em; }
+  .compare td.agent { background: var(--accent-soft); }
+  .big { font-size: 20px; font-weight: 700; line-height: 1.6; margin: 12px 0; }
   code, pre { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: 14px; }
   code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
   pre { background: var(--code-bg); padding: 12px 14px; border-radius: 6px; overflow-x: auto; line-height: 1.6; margin: 12px 0; }
@@ -158,7 +161,7 @@
     <li><span class="t-year">2013年〜</span><span class="t-name"><a href="#vector">ベクトル検索</a></span>　言葉を数の並びにして、意味の近さで探す（LLMより前からある技術。RAGでLLMと組み合わされた）</li>
     <li><span class="t-year">2020年</span><span class="t-name"><a href="#rag">RAG</a></span>　検索で資料を探し、LLMに渡して答えさせる</li>
     <li><span class="t-year">2023年</span><span class="t-name"><a href="#fc">Function calling</a></span>　LLMが「この関数を呼ぶ」と決める</li>
-    <li><span class="t-year">2022年〜</span><span class="t-name"><a href="#agent">AIエージェント</a></span>　LLMが決める、ツールを呼ぶ、結果を読むをくり返して、目的を果たす（考え方は2022年。広く使われるようになったのはFunction callingのあと）</li>
+    <li><span class="t-year">2022年〜</span><span class="t-name"><a href="#agent">AIエージェント</a></span>　目的に向かって、次に何をするかを自分で決めて動く（考え方は2022年。広く使われるようになったのはFunction callingのあと）</li>
   </ol>
   <p class="note">年は、その技術が論文や製品として広く知られるきっかけになった時期です。くわしくは、ページの最後の出典を見てください。</p>
 </header>
@@ -298,21 +301,32 @@
     <p>関数の名前と説明文は、LLMが読む仕様書です。関数が呼ばれないときは、まずプロンプトより先に説明文を疑います。人が読んでも「いつ使うか」が分からない説明は、LLMにも伝わりません。</p>
   </div>
 
-  <p class="next"><b>次へ</b>　Function callingで、LLMは道具を1回使えるようになりました。では、道具を使った結果を見て、また次の道具を使う、とくり返せたらどうでしょう。それがAIエージェントです。</p>
+  <p class="next"><b>次へ</b>　Function callingで、LLMは道具を使うかどうかを決められるようになりました。ただ、何を聞くか、次に何をさせるかを決めているのは、まだ使う人です。目的だけを渡して、そこから先の手順をLLMが自分で決めて動けたらどうでしょう。それがAIエージェントです。</p>
 </section>
 
 <section id="agent">
   <div class="year">2022年〜</div>
-  <h2><span class="num">5</span>AIエージェント：決める、呼ぶ、読むをくり返して、目的を果たす</h2>
-  <p>LLMに「考える」と「道具を使う」を交互にさせる考え方は、2022年10月の論文（ReAct）で示されました。Function callingが広まってからは、それを組み立てる道具が各社から出ています。今日使うGoogleのADK（Agent Development Kit）も、その一つで、2025年4月に公開されました。</p>
-  <p>AIエージェントは、LLMと道具（ツール）の組み合わせです。LLMが「次に何をするか」を決め、ツールを呼び、結果を読み、また次を決める。これを、答えられると判断するまでくり返します。</p>
+  <h2><span class="num">5</span>AIエージェント：目的に向かって、次に何をするかを自分で決めて動く</h2>
+  <p class="big">LLMは、聞かれたことに1回答えるだけです。AIエージェントは、目的を渡されると、何をどの順でやるかを自分で決めて、目的を果たすまで動き続けます。</p>
+  <p>この「自分で決めて動く」こと（自律性）が、LLMとAIエージェントのいちばん大きな違いです。今日使うGoogleのADKは、エージェントを「特定の目的を果たすために自律的に動く実行単位」と説明しています。Anthropicも2024年12月の記事で、エージェントを「LLMが自分の進め方と道具の使い方を、その場で決めるシステム」とし、決められた手順を順にたどる仕組み（ワークフロー）と区別しています。</p>
 
-  <svg viewBox="0 0 820 190" role="img" aria-label="LLMが決め、ツールを呼び、結果を読むことをくり返し、最後に回答する流れ">
+  <table class="compare">
+    <thead><tr><th></th><th>LLM（1の節）</th><th>AIエージェント</th></tr></thead>
+    <tbody>
+      <tr><th>渡すもの</th><td>1つの質問</td><td class="agent">目的（今日なら「42 Tokyoの魅力を、QA集をもとに答える」役目）</td></tr>
+      <tr><th>次に何をするか</th><td>使う人が決める（次の質問を考えるのは人）</td><td class="agent">エージェントが自分で決める</td></tr>
+      <tr><th>外の世界</th><td>学習したことだけで答える</td><td class="agent">ツールで調べたり、動かしたりする</td></tr>
+      <tr><th>動く回数</th><td>1回答えたら終わり</td><td class="agent">目的を果たしたと判断するまで、決める・呼ぶ・読むをくり返す</td></tr>
+      <tr><th>3のRAGとの違い</th><td>—</td><td class="agent">RAGは「必ず先に検索する」という手順を人が決めている。エージェントは、検索するか、何で検索するか、もう一度検索するかを自分で決める</td></tr>
+    </tbody>
+  </table>
+
+  <svg viewBox="0 0 820 190" role="img" aria-label="LLMが次の手を決め、ツールを呼び、結果を読むことをくり返し、目的を果たしたと判断したら回答する流れ">
     <rect x="10" y="70" width="120" height="50" rx="8" class="box"/>
-    <text x="70" y="100" text-anchor="middle">質問</text>
+    <text x="70" y="92" text-anchor="middle">目的と質問</text>
     <rect x="190" y="70" width="170" height="50" rx="8" class="box-accent"/>
-    <text x="275" y="92" text-anchor="middle">LLMが決める</text>
-    <text x="275" y="111" text-anchor="middle" class="muted" font-size="13">ツールを使う？答える？</text>
+    <text x="275" y="92" text-anchor="middle">次の手を決める</text>
+    <text x="275" y="111" text-anchor="middle" class="muted" font-size="13">調べる？答える？</text>
     <rect x="430" y="10" width="190" height="50" rx="8" class="box-accent"/>
     <text x="525" y="32" text-anchor="middle">ツールを呼ぶ</text>
     <text x="525" y="51" text-anchor="middle" class="muted" font-size="13">今日は検索ツール</text>
@@ -326,18 +340,23 @@
     <line x1="525" y1="60" x2="525" y2="126" class="arrow" marker-end="url(#ah)"/>
     <line x1="430" y1="150" x2="364" y2="112" class="arrow" marker-end="url(#ah)"/>
     <line x1="360" y1="100" x2="656" y2="100" class="arrow" stroke-dasharray="5 4" marker-end="url(#ah)"/>
-    <text x="600" y="92" text-anchor="middle" class="muted" font-size="12">答えられると決めたら</text>
+    <text x="600" y="92" text-anchor="middle" class="muted" font-size="12">果たせたと判断したら</text>
   </svg>
 
+  <h3>自律的に動くための部品</h3>
+  <p>エージェントを作るときの部品は、判断するLLM、手足になるツール（4のFunction calling）、決める・呼ぶ・読むのくり返しです。ただし、部品をそろえただけではエージェントとは言えません。次に何をするかを、人が書いた手順ではなく、エージェント自身が決めていることが大事です。</p>
+  <p>このくり返しの考え方は、2022年10月の論文（ReAct）で示されました。Function callingが広まってからは、エージェントを組み立てる道具が各社から出ています。今日使うADK（Agent Development Kit）も、その一つで、2025年4月に公開されました。</p>
+
   <h3>今日作るもの：検索をツールにしたエージェント</h3>
-  <p>今日は、2のベクトル検索を関数にして、エージェントのツールとして渡します。するとエージェントは、知らないことを聞かれたときに自分で検索を呼び、見つかったQAをもとに答えます。「こんにちは」には検索せずに答えます。3のRAGと同じく資料をもとに答えますが、検索するかどうか、何という言葉で検索するかを、エージェントが自分で決めるところが違います。</p>
+  <p>今日は、2のベクトル検索を関数にして、エージェントのツールとして渡します。エージェントは、知らないことを聞かれたら自分で検索を呼び、見つかったQAをもとに答えます。「こんにちは」には検索せずに答えます。小さなエージェントですが、検索するかどうか、何という言葉で検索するかを、人が決めた手順ではなく、自分で決めています。</p>
+  <div class="point">自分で決めて動くので、同じ質問でも、動き方や答えが毎回同じとは限りません。だからこそ、どんな答えならよいかを、人が決めておく必要があります。これが、後半のS7とS8で確かめることです。</div>
 
   <div class="later"><b>S6でやること</b>　S5で試した検索を関数にして、エージェントにツールとして渡します。<code>my_agent/agent.py</code> のTODOと、ADKのドキュメントのツールのページを読んで、自分の手で書いてください。<code>python ask.py</code> では、呼ばれたツール、その戻り値、引けたQAの点数とファイル名が毎回表示されます。</div>
 
   <!-- Tips（案）: Laboroの実体験に合わせて差し替える -->
   <div class="tip">
     <div class="tip-title">Laboroの現場から</div>
-    <p>エージェントの回答がおかしいとき、原因はLLMより検索の側にあることがよくあります。直す前に、まず「どのツールが呼ばれ、何が引けていたか」を見ます。今日の <code>ask.py</code> が、それを毎回表示するのはそのためです。</p>
+    <p>エージェントは自分で手順を決めるので、同じ質問でも、どのツールをどう呼ぶかが毎回変わることがあります。回答がおかしいときは、直す前に、まず「どのツールが呼ばれ、何が引けていたか」を見ます。原因はLLMより検索の側にあることがよくあります。今日の <code>ask.py</code> が、それを毎回表示するのはそのためです。</p>
   </div>
 </section>
 
@@ -349,6 +368,7 @@
     <li>RAG: Lewis ほか「<a href="https://arxiv.org/abs/2005.11401">Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks</a>」（2020年5月）</li>
     <li>Function calling: OpenAI「<a href="https://openai.com/index/function-calling-and-other-api-updates/">Function calling and other API updates</a>」（2023年6月13日）</li>
     <li>AIエージェント: Yao ほか「<a href="https://arxiv.org/abs/2210.03629">ReAct: Synergizing Reasoning and Acting in Language Models</a>」（2022年10月）。Google ADKの公開は2025年4月（Google Cloud Next 2025）</li>
+    <li>AIエージェントの定義: Google「<a href="https://adk.dev/agents/">Agents（ADKのドキュメント）</a>」、Anthropic「<a href="https://www.anthropic.com/engineering/building-effective-agents">Building effective agents</a>」（2024年12月）</li>
   </ul>
 </section>
 
