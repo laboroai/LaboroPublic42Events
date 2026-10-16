@@ -4,24 +4,26 @@
 
 ## 当日の流れ
 
-| 時刻 | ステップ | すること |
-| :-- | :-- | :-- |
-| 14:00 | チーム分け・確認 | 自分のチームを確かめ、チームの席に着く |
-| 14:10 | S1 オープニング・環境準備 | リポジトリを取得してビルドを始め、待つあいだに趣旨を聞いてチームで自己紹介する。「こんにちは」が返るのを確かめる |
-| 14:30 | S2 お題とデモ | 42 Tokyoをお客さんに見立て、42 Tokyoの魅力を答える営業エージェントを作る、というお題を聞く |
-| 14:40 | S3 仕組みの説明 | `docs/shikumi.html` をブラウザで開き、LLM、RAG、ベクトル検索、ツール呼び出しの話を聞く |
-| 14:55 | S4 QAを書く | `data/my_qa.csv` にある全員共通の3問に答えを書き、自由な質問を足して5〜10問にする |
-| 15:15 | S5 登録して検索する | QAを登録して検索する。途中で固有QAを足す |
-| 15:45 | 休憩 | |
-| 15:55 | S6 ツールを作る | 検索をツールにして、エージェントにつなぐ。ADKのドキュメント: [Function tools](https://adk.dev/tools-custom/function-tools/)。早く終わったら [発展課題](docs/challenges.md) |
-| 16:55 | S7 判定する | 同じ質問への回答をチームで見せ合い、公式サイトに載せてよいかを話し合って判定する |
-| 17:10 | S8 再度同じ質問をエージェントに聞いてみる | 同じ質問をもう一度聞き、回答を見比べる |
-| 17:25 | S9 総括 | 「次に何かを作るとき、最初に誰と何を決めるか」を1文、チームで言う |
-| 17:35 | S10 交流 | 後片付けをして、社員と話す。19:00まで |
+コマンドは、S1でコンテナの中に入ったあと、すべてコンテナの中で打ちます（S3の説明ページを開くときだけ、コンテナの外）。ステップごとの詳しい手順は [docs/schedule.md](docs/schedule.md) にあります。
 
-ステップごとのコマンドは [docs/schedule.md](docs/schedule.md) にまとめてあります。
+| 時刻 | ステップ | あなたがすること | 使うコマンドとファイル |
+| :-- | :-- | :-- | :-- |
+| 14:00 | チーム分け・確認 | 自分のチームを確かめ、チームの席に着く | |
+| 14:10 | S1 オープニング・環境準備 | リポジトリを取得してビルドを始める（5〜15分）。待つあいだに趣旨を聞き、チームで自己紹介する。ビルドが終わったらコンテナの中に入り、エージェントが返事をするかを確かめる | 下の「準備」のコマンド<br>`python ask.py "こんにちは"` |
+| 14:30 | S2 お題とデモ | 42 Tokyoをお客さんに見立て、42 Tokyoの魅力を答える営業エージェントを作る、というお題を聞く。司会のPCで、できあがったエージェントの動きを見る | |
+| 14:40 | S3 仕組みの説明 | 説明ページを開き、LLM、ベクトル検索、RAG、Function calling、AIエージェントの話を聞く。ページの「ためしてみる」を押しながら聞く | コンテナの外で `xdg-open docs/shikumi.html`（ファイルをブラウザにドラッグしてもよい） |
+| 14:55 | S4 QAを書く | 全員共通の3問に、自分の答えを書く。時間が余ったら、自由にQAを足してもよい。個人情報、ほかの人の名前、勤め先の名前は書かない | `data/my_qa.csv`（書き方は [data/README.md](data/README.md)） |
+| 15:15 | S5 登録して検索する | 書いたQAを登録して検索し、どのQAが何点で返るか、言い回しを変えても引けるかを試す。15:25ごろ固有QAを足し、登録し直して、合言葉の質問で `secret_qa.csv` が1位に出るかを確かめる | `python register.py`（`data/` のCSVをすべて登録する）<br>`python search.py "質問"`（上位3件を点数とファイル名つきで出す）<br>`cp ops/sample_secret_qa.csv data/secret_qa.csv`（固有QAを足す） |
+| 15:45 | 休憩 | | |
+| 15:55 | S6 ツールを作る | `my_agent/agent.py` のTODOとADKのドキュメント（[Function tools](https://adk.dev/tools-custom/function-tools/)）を読み、検索をツールにしてエージェントにつなぐ。まず関数だけを呼んで戻り値を確かめ、それからエージェントに聞く。早く終わったら [発展課題](docs/challenges.md) に進む | `my_agent/agent.py`（作り変える）<br>`python try_tool.py`（つないだツールと、LLMに見えている説明を出す）<br>`python try_tool.py ツール名 引数`（LLMを通さずに関数だけを呼ぶ）<br>`python ask.py "質問"`（[1] 呼んだツール、[2] 引けた資料、[3] 回答の3段で出る） |
+| 16:55 | S7 判定する | 1回だけ聞いて、回答をチームで見せ合う。話し合う回答を2〜3個選び、公式サイトに載せてよいかを、一人ずつOKかNGかと理由を言って話し合う | `python ask.py --save "42 Tokyoで学ぶと、どんな力が身につきますか？"`（回答を `out/answers.jsonl` に追記する） |
+| 17:10 | S8 再度同じ質問をエージェントに聞いてみる | S7と同じ質問をもう一度だけ聞き、前の回答と見比べて、変わったところをチームに一言ずつ伝える。判定はしない | S7と同じコマンド。前の回答は `out/answers.jsonl` にある |
+| 17:25 | S9 総括 | 「次に何かを作るとき、最初に誰と何を決めるか」を一人1文、チームで言う | |
+| 17:35 | S10 交流 | アンケートに答え、後片付けをしてから、社員と話す。19:00まで | 下の「後片付け」のコマンド |
 
-S3の説明ページは、コンテナの外で `xdg-open docs/shikumi.html` を実行するか、ファイルをブラウザにドラッグして開きます。
+`lib/` の中のファイル（QAの登録と検索、モデルの呼び出し、エージェントの実行）は触りません。S6では、`lib/rag.py` の `search(query, k)` を使います。
+
+キーが設定されていないときや、QAを登録する前に検索したときは、次に何をすればよいかを表示して止まります。CSVを書き直したら、もう一度 `python register.py` を実行してください。
 
 ## 準備
 
@@ -31,48 +33,22 @@ cd LaboroPublic42Events/20261017
 cp .env.example .env
 nano .env              # OPENAI_API_KEY= のあとに、Discordで配るキーを貼る
 docker compose build   # 5〜15分かかる
+docker compose up -d   # コンテナを起動して、動かしたままにする
+docker compose exec app bash   # コンテナの中に入る
 ```
+
+コンテナの中に入ると、プロンプトが `root@...:/app#` に変わります。ここから先のコマンドは、すべてこの中で打ちます。PCを再起動したときやターミナルを閉じたときは、`docker compose up -d` と `docker compose exec app bash` をもう一度実行します。
 
 キーがなくても `.env` に `HANDSON_MOCK=1` と書けば、APIを呼ばずに動きを試せます。
 
 イメージは教室PC（x86_64）向けに作ります。Apple SiliconのMacで試すときは、`HANDSON_PLATFORM=linux/arm64 docker compose build` で作ってください。
 
-## コマンド
-
-どれも `docker compose run --rm app` の後ろに付けて実行します。`docker compose run --rm app bash` でコンテナに入れば、付けなくてもかまいません。
-
-| ステップ | コマンド | すること |
-| :-- | :-- | :-- |
-| S1 | `python ask.py "こんにちは"` | エージェントが返事をするかを確かめる |
-| S5 | `python register.py` | `data/` のCSVをすべて登録する。ファイルごとの件数が出る |
-| S5 | `python search.py "質問"` | 登録したQAを検索し、上位3件を点数とファイル名つきで出す |
-| S5 | `cp ops/sample_secret_qa.csv data/secret_qa.csv` | 固有QAを足す（コンテナの外で実行する）。足したら `register.py` をやり直す |
-| S6 | `python ask.py "質問"` | エージェントに1問答えさせる。ツールがつながったかは、`secret_qa.csv` にある質問で確かめる。呼ばれたツールと、検索で引けたQAの点数とファイル名も出る |
-| S7、S8 | `python ask.py --save "質問"` | 回答を `out/answers.jsonl` に追記する |
-
-キーが設定されていないときや、QAを登録する前に検索したときは、次に何をすればよいかを表示して止まります。CSVを書き直したら、もう一度 `python register.py` を実行してください。
-
-## ファイル
-
-| パス | 中身 | あなたがすること |
-| :-- | :-- | :-- |
-| `my_agent/agent.py` | あなたのエージェント。今は返事をするだけで、QAは見ていない | **S6で作り変える**（TODOを参照） |
-| `data/my_qa.csv` | あなたが書く42の魅力QA | **書く** |
-| `data/shakaijin_qa.csv` | 社会人向けのメリットのQA（全員共通） | 触らない |
-| `data/secret_qa.csv` | 固有QA | S5でコピーして作る |
-| `ops/sample_secret_qa.csv` | 固有QAのもと | S5で `data/secret_qa.csv` にコピーする |
-| `register.py`、`search.py`、`ask.py` | 上のコマンド | 使う |
-| `lib/rag.py` | QAの登録と検索。S6では `search(query, k)` を使う | 触らない |
-| `lib/model.py`、`lib/runner.py`、`lib/cli.py` | モデルの呼び出しと、エージェントの実行 | 触らない |
-
-QAの書き方は [data/README.md](data/README.md) にあります。
-
 ## 後片付け（S10）
 
-コンテナが作ったファイルは、教室PCのアカウントでは消せないので、先にコンテナで消します。
+コンテナが作ったファイルは、教室PCのアカウントでは消せないので、先にコンテナで消します。コンテナの中にいるときは、`exit` で抜けてから実行します。
 
 ```bash
-docker compose run --rm app sh -c 'rm -rf out .pytest_cache .mypy_cache && find . -name __pycache__ -prune -exec rm -rf {} +'
+docker compose exec app sh -c 'rm -rf out .pytest_cache .mypy_cache && find . -name __pycache__ -prune -exec rm -rf {} +'
 docker compose down --rmi all
 cd ../.. && rm -rf LaboroPublic42Events
 ```
@@ -81,8 +57,8 @@ cd ../.. && rm -rf LaboroPublic42Events
 
 ## 動作確認
 
-キーがなくても、次のコマンドで一通りの動きを確かめられます。
+キーがなくても、コンテナの中で次のコマンドを実行すると、一通りの動きを確かめられます（試験はAPIを呼ばない）。
 
 ```bash
-docker compose run --rm -e HANDSON_MOCK=1 app pytest -q
+pytest -q
 ```

@@ -87,6 +87,27 @@
     border-radius: 0 6px 6px 0;
   }
   .later b { color: var(--warm); }
+  .tip {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin: 16px 0;
+    background: var(--bg);
+  }
+  .tip-title { font-size: 14px; font-weight: 700; color: var(--accent); margin-bottom: 2px; }
+  .next { margin-top: 20px; padding-top: 12px; border-top: 1px dashed var(--line); color: var(--muted); }
+  .next b { color: var(--text); }
+  .year { display: inline-block; font-size: 13px; color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: 0 10px; margin-bottom: 6px; }
+  .timeline { list-style: none; padding: 0; margin: 16px 0; border-left: 2px solid var(--line); }
+  .timeline li { position: relative; padding: 4px 0 10px 18px; }
+  .timeline li::before { content: ""; position: absolute; left: -7px; top: 11px; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); }
+  .timeline .t-year { font-variant-numeric: tabular-nums; color: var(--muted); margin-right: 8px; }
+  .timeline .t-name { font-weight: 700; }
+  .sources { font-size: 14px; color: var(--muted); }
+  .sources li { margin: 2px 0; }
+  .compare th:first-child { width: 7em; }
+  .compare td.agent { background: var(--accent-soft); }
+  .big { font-size: 20px; font-weight: 700; line-height: 1.6; margin: 12px 0; }
   code, pre { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: 14px; }
   code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
   pre { background: var(--code-bg); padding: 12px 14px; border-radius: 6px; overflow-x: auto; line-height: 1.6; margin: 12px 0; }
@@ -134,42 +155,22 @@
 <header>
   <div class="step">S3 仕組みの説明</div>
   <h1>今日作るエージェントの中で、何が起きているか</h1>
-  <p>今日作るのは、質問を受けて、自分で書いたQAを探し、それをもとに答えるエージェントです。中では4つの仕組みが動いています。どれも、後半のS7とS8で起きることにつながります。</p>
-  <svg viewBox="0 0 820 130" role="img" aria-label="質問からQAの検索、エージェント、回答までの流れ">
-    <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="arrowhead"/></marker></defs>
-    <rect x="10" y="40" width="120" height="50" rx="8" class="box"/>
-    <text x="70" y="70" text-anchor="middle">質問</text>
-    <rect x="180" y="40" width="200" height="50" rx="8" class="box-accent"/>
-    <text x="280" y="62" text-anchor="middle">エージェント（LLM）</text>
-    <text x="280" y="81" text-anchor="middle" class="muted" font-size="13">1. LLM</text>
-    <rect x="430" y="10" width="170" height="50" rx="8" class="box-accent"/>
-    <text x="515" y="32" text-anchor="middle">検索ツール</text>
-    <text x="515" y="51" text-anchor="middle" class="muted" font-size="13">4. ツール呼び出し</text>
-    <rect x="640" y="10" width="170" height="50" rx="8" class="box-accent"/>
-    <text x="725" y="32" text-anchor="middle">あなたのQA</text>
-    <text x="725" y="51" text-anchor="middle" class="muted" font-size="13">3. ベクトル検索</text>
-    <rect x="430" y="75" width="170" height="50" rx="8" class="box"/>
-    <text x="515" y="98" text-anchor="middle">回答</text>
-    <text x="515" y="117" text-anchor="middle" class="muted" font-size="13">2. RAG</text>
-    <line x1="130" y1="65" x2="176" y2="65" class="arrow" marker-end="url(#ah)"/>
-    <line x1="380" y1="52" x2="426" y2="37" class="arrow" marker-end="url(#ah)"/>
-    <line x1="600" y1="35" x2="636" y2="35" class="arrow" marker-end="url(#ah)"/>
-    <line x1="380" y1="78" x2="426" y2="98" class="arrow" marker-end="url(#ah)"/>
-  </svg>
-  <nav>
-    <ol>
-      <li><a href="#llm">LLM：次の言葉を確率で選ぶ</a></li>
-      <li><a href="#rag">RAG：資料を渡して答えさせる</a></li>
-      <li><a href="#vector">ベクトル検索：意味の近さで探す</a></li>
-      <li><a href="#tool">ツール呼び出し：説明を読んで、呼ぶかどうかを決める</a></li>
-    </ol>
-  </nav>
+  <p>今日作るAIエージェントは、5つの技術を組み合わせて動いています。LLMを軸に、LLMだけではできなかったことを、次の技術が埋めてきました。この順に説明します。</p>
+  <ol class="timeline">
+    <li><span class="t-year">2017年〜</span><span class="t-name"><a href="#llm">LLM</a></span>　次の言葉を確率で選んで、文章を作る（2022年11月にChatGPTが公開）</li>
+    <li><span class="t-year">2013年〜</span><span class="t-name"><a href="#vector">ベクトル検索</a></span>　言葉を数の並びにして、意味の近さで探す（LLMより前からある技術。RAGでLLMと組み合わされた）</li>
+    <li><span class="t-year">2020年</span><span class="t-name"><a href="#rag">RAG</a></span>　検索で資料を探し、LLMに渡して答えさせる</li>
+    <li><span class="t-year">2023年</span><span class="t-name"><a href="#fc">Function calling</a></span>　LLMが「この関数を呼ぶ」と決める</li>
+    <li><span class="t-year">2022年〜</span><span class="t-name"><a href="#agent">AIエージェント</a></span>　目的に向かって、次に何をするかを自分で決めて動く（考え方は2022年。広く使われるようになったのはFunction callingのあと）</li>
+  </ol>
+  <p class="note">年は、その技術が論文や製品として広く知られるきっかけになった時期です。くわしくは、ページの最後の出典を見てください。</p>
 </header>
 
 <section id="llm">
+  <div class="year">2017年〜</div>
   <h2><span class="num">1</span>LLM：次の言葉を確率で選ぶ</h2>
-  <p>LLMは、それまでの文章を読んで、次に来そうな言葉を候補ごとの確率で出します。その確率に従って1つ選び、また次の言葉を選ぶ。これをくり返して文章を作ります。</p>
-  <p>いちばん確率の高い言葉が毎回選ばれるとは限りません。そのため、同じ質問をしても、聞くたびに文面が変わります。</p>
+  <p>2017年に、今のLLMのもとになる仕組み（Transformer）が発表されました。2022年11月にChatGPTが公開されて、誰でも使えるものになりました。</p>
+  <p>LLMは、それまでの文章を読んで、次に来そうな言葉を候補ごとの確率で出します。その確率に従って1つ選び、また次の言葉を選びます。これをくり返して文章を作ります。いちばん確率の高い言葉が毎回選ばれるとは限らないので、同じ質問をしても、聞くたびに文面が変わります。</p>
 
   <div class="demo">
     <div class="demo-title">ためしてみる（数字は説明用のたとえです）</div>
@@ -180,40 +181,14 @@
     <div class="history" id="history"></div>
   </div>
 
-  <div class="later"><b>S8で見ること</b>　同じ質問をもう一度聞くと、前と同じ回答は返ってきません。言い回しが少し変わるだけでも、<code>assert answer == "..."</code> のようなテストは通りません。</div>
-</section>
-
-<section id="rag">
-  <h2><span class="num">2</span>RAG：資料を渡して答えさせる</h2>
-  <p>RAG（検索拡張生成）は、質問に関係しそうな資料を先に探し、その資料と質問をいっしょにLLMへ渡して答えさせる仕組みです。今日の資料は、皆さんが書くQAです。</p>
-  <svg viewBox="0 0 820 170" role="img" aria-label="質問で検索してQAを取り出し、質問とQAをLLMに渡して回答を作る流れ">
-    <rect x="10" y="60" width="120" height="50" rx="8" class="box"/>
-    <text x="70" y="90" text-anchor="middle">質問</text>
-    <rect x="180" y="10" width="160" height="50" rx="8" class="box-accent"/>
-    <text x="260" y="40" text-anchor="middle">QAを検索</text>
-    <rect x="390" y="10" width="160" height="50" rx="8" class="box"/>
-    <text x="470" y="32" text-anchor="middle">見つかったQA</text>
-    <text x="470" y="51" text-anchor="middle" class="muted" font-size="13">上位3件</text>
-    <rect x="390" y="100" width="160" height="60" rx="8" class="box-accent"/>
-    <text x="470" y="126" text-anchor="middle">LLM</text>
-    <text x="470" y="146" text-anchor="middle" class="muted" font-size="13">質問＋QAを読む</text>
-    <rect x="610" y="100" width="200" height="60" rx="8" class="box-warm"/>
-    <text x="710" y="126" text-anchor="middle">回答</text>
-    <text x="710" y="146" text-anchor="middle" class="muted" font-size="13">QA＋LLMがもともと知っていること</text>
-    <line x1="130" y1="78" x2="176" y2="42" class="arrow" marker-end="url(#ah)"/>
-    <line x1="340" y1="35" x2="386" y2="35" class="arrow" marker-end="url(#ah)"/>
-    <line x1="470" y1="60" x2="470" y2="96" class="arrow" marker-end="url(#ah)"/>
-    <line x1="130" y1="95" x2="386" y2="128" class="arrow" marker-end="url(#ah)"/>
-    <line x1="550" y1="130" x2="606" y2="130" class="arrow" marker-end="url(#ah)"/>
-  </svg>
-  <div class="point">LLMは、渡された資料だけで答えるとは限りません。もともと知っていることも混ぜて答えます。QAに書いていないことが、もっともらしく回答に入ることがあります。</div>
-  <div class="later"><b>S7で見ること</b>　回答を公式サイトに載せてよいかを判定するとき、その一文がQAから来たのか、LLMが足したのかを見てください。判定が割れる理由の一つになります。</div>
+  <p class="next"><b>次へ</b>　LLMは、学習した知識の中から言葉を選びます。今日の合言葉や、皆さんが書くQAのように、学習していないことは知りません。知らないことも、もっともらしく答えてしまいます。そこで、外にある資料を探してくる技術が要ります。その技術は、LLMより前からありました。次のベクトル検索です。</p>
 </section>
 
 <section id="vector">
-  <h2><span class="num">3</span>ベクトル検索：意味の近さで探す</h2>
-  <p>検索は、言葉が一致するかではなく、意味が近いかで探します。そのために、文章を数の並び（ベクトル）に変えます。今日使う埋め込みモデル（<code>text-embedding-3-small</code>）では、1つの文章が1536個の数になります。</p>
-  <p>意味の近い文章は、ベクトルの向きが近くなります。向きの近さを点数にしたのが、S5の検索コマンドに出る点数です。1に近いほど、意味が近いことを表します。</p>
+  <div class="year">2013年〜</div>
+  <h2><span class="num">2</span>ベクトル検索：意味の近さで探す</h2>
+  <p>コンピュータで文章を探すとき、もともとは「同じ言葉が入っているか」で探していました。それでは、「学費」で探しても「授業料」の文書は見つかりません。</p>
+  <p>2013年ごろから、言葉や文章を数の並び（ベクトル）に変える技術が広まりました。意味の近い文章は、ベクトルの向きが近くなります。向きの近さを点数にすれば、言葉が違っても意味の近いものを探せます。これがベクトル検索です。文章をベクトルに変えるのは、LLMとは別の専用のモデル（埋め込みモデル）です。今日使う埋め込みモデル（<code>text-embedding-3-small</code>）では、1つの文章が1536個の数になります。</p>
 
   <div class="demo">
     <div class="demo-title">ためしてみる（2次元に縮めたたとえです。本物は1536次元）</div>
@@ -232,13 +207,81 @@
   1. 0.829  secret_qa.csv     今日のハンズオンの合言葉は？
   ...</code></pre>
   <p class="note">点数は10/9に本物の埋め込みモデルで試したときの値です。このとき2位は0.115で、1位と大きく離れていました。皆さんのQAによって変わります。</p>
-  <div class="later"><b>S5で見ること</b>　どのQAが何点で返るか、言い回しを変えても引けるかを試してください。</div>
+
+  <p class="next"><b>次へ</b>　ベクトル検索は、意味の近い資料を見つけてくれます。でも、見つけるだけで、質問に答える文章は作れません。見つけた資料をLLMに渡せば、LLMが学習していないことでも、資料をもとに答えられます。この組み合わせが、次のRAGです。</p>
 </section>
 
-<section id="tool">
-  <h2><span class="num">4</span>ツール呼び出し：説明を読んで、呼ぶかどうかを決める</h2>
-  <p>エージェントには、Pythonの関数を「ツール」として渡せます。LLMは関数の中身のコードを読みません。読むのは、関数の名前、引数とその型、docstring（説明文）だけです。それを読んで、この質問に答えるのにツールを呼ぶべきかを、LLMが自分で決めます。</p>
+<section id="rag">
+  <div class="year">2020年</div>
+  <h2><span class="num">3</span>RAG：検索で資料を探し、LLMに渡して答えさせる</h2>
+  <p>RAG（検索拡張生成）は、2020年に論文で発表された考え方です。質問が来たら、まずベクトル検索で関係しそうな資料を探し、その資料と質問をいっしょにLLMへ渡して答えさせます。LLMが学習していないことでも、資料に書いてあれば答えられるようになります。</p>
+  <svg viewBox="0 0 820 170" role="img" aria-label="質問で検索してQAを取り出し、質問とQAをLLMに渡して回答を作る流れ">
+    <rect x="10" y="60" width="120" height="50" rx="8" class="box"/>
+    <text x="70" y="90" text-anchor="middle">質問</text>
+    <rect x="180" y="10" width="160" height="50" rx="8" class="box-accent"/>
+    <text x="260" y="32" text-anchor="middle">ベクトル検索</text>
+    <text x="260" y="51" text-anchor="middle" class="muted" font-size="13">必ず先に探す</text>
+    <rect x="390" y="10" width="160" height="50" rx="8" class="box"/>
+    <text x="470" y="32" text-anchor="middle">見つかった資料</text>
+    <text x="470" y="51" text-anchor="middle" class="muted" font-size="13">上位3件</text>
+    <rect x="390" y="100" width="160" height="60" rx="8" class="box-accent"/>
+    <text x="470" y="126" text-anchor="middle">LLM</text>
+    <text x="470" y="146" text-anchor="middle" class="muted" font-size="13">質問＋資料を読む</text>
+    <rect x="610" y="100" width="200" height="60" rx="8" class="box-warm"/>
+    <text x="710" y="126" text-anchor="middle">回答</text>
+    <text x="710" y="146" text-anchor="middle" class="muted" font-size="13">資料＋LLMがもともと知っていること</text>
+    <line x1="130" y1="78" x2="176" y2="42" class="arrow" marker-end="url(#ah)"/>
+    <line x1="340" y1="35" x2="386" y2="35" class="arrow" marker-end="url(#ah)"/>
+    <line x1="470" y1="60" x2="470" y2="96" class="arrow" marker-end="url(#ah)"/>
+    <line x1="130" y1="95" x2="386" y2="128" class="arrow" marker-end="url(#ah)"/>
+    <line x1="550" y1="130" x2="606" y2="130" class="arrow" marker-end="url(#ah)"/>
+    <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="arrowhead"/></marker></defs>
+  </svg>
+  <div class="point">LLMは、渡された資料だけで答えるとは限りません。もともと知っていることも混ぜて答えます。資料に書いていないことが、もっともらしく回答に入ることがあります。</div>
 
+  <div class="tip">
+    <div class="tip-title">Laboroの現場から</div>
+    <p>RAGの回答がおかしいとき、原因はLLMより検索の側にあることがよくあります。まず、答えに必要な資料が上位に引けているかを確かめます。資料が引けていなければ、LLMを替えても回答はよくなりません。</p>
+  </div>
+
+  <h3>その先：引ける資料の質を上げる工夫</h3>
+  <p>今日のRAGは、ベクトル検索で上位3件を引く、いちばん基本の形です。仕事では、次のような工夫を組み合わせて、引ける資料の質を上げます。</p>
+  <ul>
+    <li><b>ハイブリッド検索</b>　ベクトル検索の節で触れた「同じ言葉が入っているか」で探す検索と、ベクトル検索を組み合わせます。型番や固有名詞のように、言葉がそのまま一致してほしいものに強くなります。</li>
+    <li><b>リランキング</b>　候補を多めに引いてから、質問との関係を別のモデルで読み直して並べ替えます。</li>
+    <li><b>Graph RAG</b>　資料から「何と何がどう関係しているか」を取り出してグラフ（つながりの図）にし、そのつながりをたどって探します。「資料全体でよく出てくる話題は？」のように、1つの資料だけでは答えられない質問に向いています。2024年にMicrosoftの研究者が発表しました。</li>
+    <li><b>検索をエージェントに任せる形</b>　検索するか、何で検索するか、もう一度検索するかをLLMに決めさせます（Agentic RAGと呼ばれます）。今日作るのはこの形で、5番目のAIエージェントの節で説明します。</li>
+  </ul>
+
+  <p class="next"><b>次へ</b>　今日の基本の形のRAGは、質問が何であっても必ず先に検索します。「こんにちは」にも検索が走ります。検索するかどうかを、LLM自身が決められないからです。LLMに「このツールを使う」と決めさせる仕組みが、次のFunction callingです。</p>
+</section>
+
+<section id="fc">
+  <div class="year">2023年</div>
+  <h2><span class="num">4</span>Function calling：LLMが「この関数を呼ぶ」と決める</h2>
+  <p>2023年6月に、OpenAIがAPIの機能としてFunction callingを発表しました。LLMに関数の説明を渡しておくと、LLMは質問を読んで「この関数を呼ぶ」と決め、関数に渡す引数を作ります。LLMに渡すこの関数を、ADKでは「ツール」と呼びます。ただし、LLMが関数を実行するわけではありません。実行するのはプログラム（今日はADK）で、LLMはその戻り値を読んでから答えます。</p>
+
+  <svg viewBox="0 0 820 150" role="img" aria-label="LLMが関数を呼ぶと決め、プログラムが関数を実行し、その結果をLLMが読んで回答する流れ">
+    <rect x="10" y="50" width="120" height="50" rx="8" class="box"/>
+    <text x="70" y="80" text-anchor="middle">質問</text>
+    <rect x="170" y="50" width="170" height="50" rx="8" class="box-accent"/>
+    <text x="255" y="72" text-anchor="middle">LLM</text>
+    <text x="255" y="91" text-anchor="middle" class="muted" font-size="13">呼ぶ関数と引数を決める</text>
+    <rect x="380" y="5" width="190" height="50" rx="8" class="box"/>
+    <text x="475" y="27" text-anchor="middle">プログラムが関数を実行</text>
+    <text x="475" y="46" text-anchor="middle" class="muted" font-size="13">戻り値をLLMに返す</text>
+    <rect x="380" y="95" width="190" height="50" rx="8" class="box-accent"/>
+    <text x="475" y="117" text-anchor="middle">LLM</text>
+    <text x="475" y="136" text-anchor="middle" class="muted" font-size="13">戻り値を読んで答える</text>
+    <rect x="630" y="95" width="180" height="50" rx="8" class="box-warm"/>
+    <text x="720" y="125" text-anchor="middle">回答</text>
+    <line x1="130" y1="75" x2="166" y2="75" class="arrow" marker-end="url(#ah)"/>
+    <line x1="340" y1="65" x2="376" y2="35" class="arrow" marker-end="url(#ah)"/>
+    <line x1="475" y1="55" x2="475" y2="91" class="arrow" marker-end="url(#ah)"/>
+    <line x1="570" y1="120" x2="626" y2="120" class="arrow" marker-end="url(#ah)"/>
+  </svg>
+
+  <p>LLMは関数の中身のコードを読みません。読むのは、関数の名前、引数とその型、docstring（説明文）だけです。</p>
   <h3>たとえば、こんな関数を渡すと</h3>
   <pre><code>def get_menu(day: str) -&gt; dict:
     """指定した曜日の学食のメニューを返す。学食や昼ごはんについて聞かれたときに使う。
@@ -251,28 +294,97 @@
   <pre><code>名前:   get_menu
 説明:   指定した曜日の学食のメニューを返す。学食や昼ごはんについて聞かれたときに使う。
 引数:   day（文字列）  曜日。「月」「火」のように1文字で渡す。</code></pre>
+  <p>「火曜の学食は？」と聞かれると、LLMは <code>get_menu(day="火")</code> を呼ぶと決めます。「こんにちは」には呼びません。</p>
 
-  <svg viewBox="0 0 820 150" role="img" aria-label="LLMがツールを呼び、その結果を読んで回答する流れ">
-    <rect x="10" y="50" width="130" height="50" rx="8" class="box"/>
-    <text x="75" y="80" text-anchor="middle">質問</text>
-    <rect x="190" y="50" width="150" height="50" rx="8" class="box-accent"/>
-    <text x="265" y="80" text-anchor="middle">LLM</text>
-    <rect x="400" y="5" width="180" height="50" rx="8" class="box"/>
-    <text x="490" y="27" text-anchor="middle">呼ぶと決めたら</text>
-    <text x="490" y="46" text-anchor="middle" class="muted" font-size="13">関数を実行して結果を返す</text>
-    <rect x="400" y="95" width="180" height="50" rx="8" class="box"/>
-    <text x="490" y="117" text-anchor="middle">呼ばないと決めたら</text>
-    <text x="490" y="136" text-anchor="middle" class="muted" font-size="13">そのまま答える</text>
-    <rect x="640" y="50" width="170" height="50" rx="8" class="box-warm"/>
-    <text x="725" y="80" text-anchor="middle">回答</text>
-    <line x1="140" y1="75" x2="186" y2="75" class="arrow" marker-end="url(#ah)"/>
-    <line x1="340" y1="65" x2="396" y2="32" class="arrow" marker-end="url(#ah)"/>
-    <line x1="340" y1="85" x2="396" y2="118" class="arrow" marker-end="url(#ah)"/>
-    <line x1="580" y1="32" x2="636" y2="65" class="arrow" marker-end="url(#ah)"/>
-    <line x1="580" y1="118" x2="636" y2="85" class="arrow" marker-end="url(#ah)"/>
+  <div class="point">説明文の書き方しだいで、関数は呼ばれたり呼ばれなかったりします。「何をする関数か」と「いつ使うか」を書いておくと、LLMが判断しやすくなります。</div>
+  <div class="later"><b>S6で使うコマンド</b>　<code>python try_tool.py</code> で、つないだ関数がLLMにどう見えているかを確かめられます。<code>python try_tool.py 関数名 引数</code> とすると、LLMを通さずに関数だけを呼んで、戻り値を見られます。うまく動かないときは、関数とLLMのどちらに原因があるかを、ここで切り分けてください。</div>
+
+  <div class="tip">
+    <div class="tip-title">Laboroの現場から</div>
+    <p>関数の名前と説明文は、LLMが読む仕様書です。関数が呼ばれないときは、プロンプトより先に説明文を見直します。人が読んで「いつ使うか」が分からない説明は、LLMにも伝わりません。</p>
+  </div>
+
+  <p class="next"><b>次へ</b>　Function callingで、LLMはツールを使うかどうかを決められるようになりました。ただ、何を聞くか、次に何をさせるかを決めているのは、まだ使う人です。目的だけを渡せば、そこから先の手順をLLMが自分で決めて動く。それがAIエージェントです。</p>
+</section>
+
+<section id="agent">
+  <div class="year">2022年〜</div>
+  <h2><span class="num">5</span>AIエージェント：目的に向かって、次に何をするかを自分で決めて動く</h2>
+  <p class="big">LLMは、聞かれたことに1回答えるだけです。AIエージェントは、目的を渡されると、何をどの順でやるかを自分で決めて、目的を果たすまで動き続けます。</p>
+  <p>この「自分で決めて動く」こと（自律性）が、LLMとAIエージェントのいちばん大きな違いです。今日使うGoogleのADKは、エージェントを「特定の目的を果たすために自律的に動く実行単位」と説明しています。Anthropicも2024年12月の記事で、エージェントを「LLMが自分の進め方とツールの使い方を、その場で決めるシステム」とし、決められた手順を順にたどる仕組み（ワークフロー）と区別しています。</p>
+
+  <table class="compare">
+    <thead><tr><th></th><th>LLM</th><th>AIエージェント</th></tr></thead>
+    <tbody>
+      <tr><th>渡すもの</th><td>1つの質問</td><td class="agent">目的（今日なら「42 Tokyoの魅力を、QA集をもとに答える」役目）</td></tr>
+      <tr><th>次に何をするか</th><td>使う人が決める（次の質問を考えるのは人）</td><td class="agent">エージェントが自分で決める</td></tr>
+      <tr><th>外の世界</th><td>学習したことだけで答える</td><td class="agent">ツールで調べたり、動かしたりする</td></tr>
+      <tr><th>動く回数</th><td>1回答えたら終わり</td><td class="agent">目的を果たしたと判断するまで、決める・呼ぶ・読むをくり返す</td></tr>
+      <tr><th>RAGとの違い</th><td>—</td><td class="agent">RAGは「必ず先に検索する」という手順を人が決めている。エージェントは、検索するか、何で検索するか、もう一度検索するかを自分で決める</td></tr>
+    </tbody>
+  </table>
+
+  <svg viewBox="0 0 820 190" role="img" aria-label="LLMが次の手を決め、ツールを呼び、結果を読むことをくり返し、目的を果たしたと判断したら回答する流れ">
+    <rect x="10" y="70" width="120" height="50" rx="8" class="box"/>
+    <text x="70" y="92" text-anchor="middle">目的と質問</text>
+    <rect x="190" y="70" width="170" height="50" rx="8" class="box-accent"/>
+    <text x="275" y="92" text-anchor="middle">次の手を決める</text>
+    <text x="275" y="111" text-anchor="middle" class="muted" font-size="13">調べる？答える？</text>
+    <rect x="430" y="10" width="190" height="50" rx="8" class="box-accent"/>
+    <text x="525" y="32" text-anchor="middle">ツールを呼ぶ</text>
+    <text x="525" y="51" text-anchor="middle" class="muted" font-size="13">今日は検索ツール</text>
+    <rect x="430" y="130" width="190" height="50" rx="8" class="box"/>
+    <text x="525" y="152" text-anchor="middle">結果を読む</text>
+    <text x="525" y="171" text-anchor="middle" class="muted" font-size="13">足りなければ、また決める</text>
+    <rect x="660" y="70" width="150" height="50" rx="8" class="box-warm"/>
+    <text x="735" y="100" text-anchor="middle">回答</text>
+    <line x1="130" y1="95" x2="186" y2="95" class="arrow" marker-end="url(#ah)"/>
+    <line x1="360" y1="85" x2="426" y2="40" class="arrow" marker-end="url(#ah)"/>
+    <line x1="525" y1="60" x2="525" y2="126" class="arrow" marker-end="url(#ah)"/>
+    <line x1="430" y1="150" x2="364" y2="112" class="arrow" marker-end="url(#ah)"/>
+    <line x1="360" y1="100" x2="656" y2="100" class="arrow" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+    <text x="600" y="92" text-anchor="middle" class="muted" font-size="12">果たせたと判断したら</text>
   </svg>
-  <div class="point">説明文の書き方しだいで、ツールは呼ばれたり呼ばれなかったりします。「何をするツールか」と「いつ使うか」を書いておくと、LLMが判断しやすくなります。</div>
-  <div class="later"><b>S6でやること</b>　S5で試した検索を関数にして、エージェントにツールとして渡します。<code>my_agent/agent.py</code> のTODOと、ADKのドキュメントのツールのページを読んで、自分の手で書いてください。</div>
+
+  <h3>自律的に動くための部品</h3>
+  <p>エージェントを作るときの部品は、判断するLLM、手足になるツール（Function calling）、決める・呼ぶ・読むのくり返しです。ただし、部品をそろえただけではエージェントとは言えません。分かれ目は、次に何をするかを決めているのが、人が書いた手順か、エージェント自身かです。</p>
+  <p>このくり返しの考え方は、2022年10月の論文（ReAct）で示されました。Function callingが広まってからは、エージェントを組み立てる仕組み（フレームワーク）が各社から出ています。今日使うADK（Agent Development Kit）も、その一つで、2025年4月に公開されました。</p>
+
+  <h3>今日作るもの：検索をツールにしたエージェント</h3>
+  <p>今日は、ベクトル検索を関数にして、エージェントのツールとして渡します。エージェントは、知らないことを聞かれたら自分で検索を呼び、見つかったQAをもとに答えます。「こんにちは」には検索せずに答えます。小さなエージェントですが、検索するかどうか、何という言葉で検索するかを、人が決めた手順ではなく、自分で決めています。</p>
+  <h3>S6で <code>python ask.py</code> に出る画面（例）</h3>
+  <pre><code>[1] 調べる: エージェントが呼んだツール
+  search_qa({"query": "今日のハンズオンの合言葉"})
+
+[2] 引けた資料: ツールが返したもの
+  [戻り値] {"results": [{"question": "今日のハンズオンの合言葉は？", ...
+  1. 0.829  secret_qa.csv     今日のハンズオンの合言葉は？
+     答え: 今日の合言葉は「そらまめ通信」です。
+
+[3] 回答: 引けた資料をもとに、LLMが書いた答え
+今日の合言葉は「そらまめ通信」です。</code></pre>
+  <p class="note">関数名や回答の文面は人によって、また毎回変わります。[1]から[3]へ、エージェントが何を調べ、どの資料をもとに答えたかを、上からたどってください。</p>
+  <div class="point">自分で決めて動くので、同じ質問でも、動き方や答えが毎回同じとは限りません。だから、どんな答えならよいかを、人が決めておく必要があります。</div>
+
+  <div class="later"><b>S6でやること</b>　S5で試した検索を関数にして、エージェントにツールとして渡します。<code>my_agent/agent.py</code> のTODOと、ADKのドキュメントのツールのページを読んで、自分の手で書いてください。<code>python ask.py</code> では、「調べる → 引けた資料 → 回答」の3段で、エージェントの動きが毎回表示されます。</div>
+
+  <div class="tip">
+    <div class="tip-title">Laboroの現場から</div>
+    <p>エージェントは自分で手順を決めるので、同じ質問でも、どのツールをどう呼ぶかが毎回変わることがあります。仕事で作るときは、どこまでをエージェントに任せ、どこで人が確かめるかを先に決めます。回答がおかしいときは、どのツールが呼ばれ、何が引けていたかを最初に見ます。今日の <code>ask.py</code> は、これを毎回表示します。</p>
+  </div>
+</section>
+
+<section id="sources">
+  <h2>出典</h2>
+  <ul class="sources">
+    <li>ベクトル検索: Mikolov ほか「<a href="https://arxiv.org/abs/1301.3781">Efficient Estimation of Word Representations in Vector Space</a>」（2013年1月、word2vec）</li>
+    <li>LLM: Vaswani ほか「<a href="https://arxiv.org/abs/1706.03762">Attention Is All You Need</a>」（2017年6月、Transformer）。ChatGPTの公開は2022年11月30日</li>
+    <li>RAG: Lewis ほか「<a href="https://arxiv.org/abs/2005.11401">Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks</a>」（2020年5月）</li>
+    <li>Graph RAG: Edge ほか「<a href="https://arxiv.org/abs/2404.16130">From Local to Global: A Graph RAG Approach to Query-Focused Summarization</a>」（2024年4月、Microsoft Research）</li>
+    <li>Function calling: OpenAI「<a href="https://openai.com/index/function-calling-and-other-api-updates/">Function calling and other API updates</a>」（2023年6月13日）</li>
+    <li>AIエージェント: Yao ほか「<a href="https://arxiv.org/abs/2210.03629">ReAct: Synergizing Reasoning and Acting in Language Models</a>」（2022年10月）。Google ADKの公開は2025年4月（Google Cloud Next 2025）</li>
+    <li>AIエージェントの定義: Google「<a href="https://adk.dev/agents/">Agents（ADKのドキュメント）</a>」、Anthropic「<a href="https://www.anthropic.com/engineering/building-effective-agents">Building effective agents</a>」（2024年12月）</li>
+  </ul>
 </section>
 
 <footer>
