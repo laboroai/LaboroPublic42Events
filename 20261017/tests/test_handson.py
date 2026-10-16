@@ -62,6 +62,14 @@ def test_search_returns_source_and_score(index):
     assert 0 < top["score"] <= 1
 
 
+def test_search_shows_answers(index, monkeypatch, capsys):
+    import search as search_cmd
+
+    monkeypatch.setattr(sys, "argv", ["search.py", SECRET_Q])
+    search_cmd.main()
+    assert "答え: 今日の合言葉は" in capsys.readouterr().out
+
+
 def test_index_built_in_another_mode_is_rejected(index, monkeypatch):
     monkeypatch.setenv("HANDSON_MOCK", "0")
     with pytest.raises(rag.RagError, match="register.py をやり直して"):
