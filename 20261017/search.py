@@ -1,4 +1,4 @@
-"""登録したQAを検索する（S5）。どのQAが何点で返るかを表示する。
+"""登録したQAを検索する（S5）。どのQAが何点で返るかを、答えの書き出しとあわせて表示する。
 
   python search.py "42の魅力は？"
   python search.py -k 5 "授業料"
@@ -20,7 +20,7 @@ def main():
     if index.is_stale():
         print("[注意] 登録したあとにCSVが変わっています。python register.py をやり直してください。\n")
     print(f"「{args.query}」に近いQA（点数は1に近いほど近い）")
-    print_hits(index.search(args.query, args.k))
+    print_hits(index.search(args.query, args.k), answers=True)
 
 
 if __name__ == "__main__":
