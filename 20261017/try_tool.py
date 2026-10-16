@@ -8,6 +8,7 @@
 import argparse
 import asyncio
 import inspect
+import warnings
 
 from google.adk.tools import FunctionTool
 
@@ -29,7 +30,10 @@ def tool_functions(agent) -> dict:
 
 def describe(func):
     """LLMに見えている、ツールの名前・説明・引数を出す。"""
-    decl = FunctionTool(func)._get_declaration()
+    with warnings.catch_warnings():
+        # ADK の「EXPERIMENTAL」の警告は、学生の画面では読まなくてよいので出さない
+        warnings.simplefilter("ignore", UserWarning)
+        decl = FunctionTool(func)._get_declaration()
     print(f"[ツール] {decl.name}")
     print(f"  説明: {decl.description or '（docstring がありません。LLMは、いつ使えばよいかが分かりません）'}")
     props = (decl.parameters.properties or {}) if decl.parameters else {}
