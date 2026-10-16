@@ -183,10 +183,9 @@
 
   <div class="later"><b>S8で見ること</b>　同じ質問をもう一度聞くと、前と同じ回答は返ってきません。言い回しが少し変わるだけでも、<code>assert answer == "..."</code> のようなテストは通りません。</div>
 
-  <!-- Tips（案）: Laboroの実体験に合わせて差し替える -->
   <div class="tip">
     <div class="tip-title">Laboroの現場から</div>
-    <p>仕事でLLMを使うときは、出力が毎回揺れる前提で作ります。揺れをゼロにする設定を探すより、揺れても困らない確かめ方（何を見ればOKとするか）を先に決めておくほうが、結果的に早く進みます。</p>
+    <p>仕事でLLMを使うときは、出力が毎回揺れるものとして作ります。揺れをなくす設定を探す前に、回答に何が書いてあればOKとするかを決めておきます。そのほうが、あとで作り直す回数が減ります。</p>
   </div>
 
   <p class="next"><b>次へ</b>　LLMは、学習した知識の中から言葉を選びます。今日の合言葉や、皆さんが書くQAのように、学習していないことは知りません。知らないことも、もっともらしく答えてしまいます。そこで、外にある資料を探してくる技術が要ります。その技術は、LLMより前からありました。次のベクトル検索です。</p>
@@ -249,7 +248,21 @@
   <div class="point">LLMは、渡された資料だけで答えるとは限りません。もともと知っていることも混ぜて答えます。資料に書いていないことが、もっともらしく回答に入ることがあります。</div>
   <div class="later"><b>S7で見ること</b>　回答を公式サイトに載せてよいかを判定するとき、その一文がQAから来たのか、LLMが足したのかを見てください。判定が割れる理由の一つになります。</div>
 
-  <p class="next"><b>次へ</b>　この形のRAGは、質問が何であっても必ず先に検索します。「こんにちは」にも検索が走ります。検索するかどうかを、LLM自身が決められないからです。LLMに「このツールを使う」と決めさせる仕組みが、次のFunction callingです。</p>
+  <div class="tip">
+    <div class="tip-title">Laboroの現場から</div>
+    <p>RAGの回答がおかしいとき、原因はLLMより検索の側にあることがよくあります。まず、答えに必要な資料が上位に引けているかを確かめます。資料が引けていなければ、LLMを替えても回答はよくなりません。</p>
+  </div>
+
+  <h3>その先：引ける資料の質を上げる工夫</h3>
+  <p>今日のRAGは、ベクトル検索で上位3件を引く、いちばん基本の形です。仕事では、次のような工夫を組み合わせて、引ける資料の質を上げます。</p>
+  <ul>
+    <li><b>ハイブリッド検索</b>　ベクトル検索の節で触れた「同じ言葉が入っているか」で探す検索と、ベクトル検索を組み合わせます。型番や固有名詞のように、言葉がそのまま一致してほしいものに強くなります。</li>
+    <li><b>リランキング</b>　候補を多めに引いてから、質問との関係を別のモデルで読み直して並べ替えます。</li>
+    <li><b>Graph RAG</b>　資料から「何と何がどう関係しているか」を取り出してグラフ（つながりの図）にし、そのつながりをたどって探します。「資料全体でよく出てくる話題は？」のように、1つの資料だけでは答えられない質問に向いています。2024年にMicrosoftの研究者が発表しました。</li>
+    <li><b>検索をエージェントに任せる形</b>　検索するか、何で検索するか、もう一度検索するかをLLMに決めさせます（Agentic RAGと呼ばれます）。今日作るのはこの形で、5番目のAIエージェントの節で説明します。</li>
+  </ul>
+
+  <p class="next"><b>次へ</b>　今日の基本の形のRAGは、質問が何であっても必ず先に検索します。「こんにちは」にも検索が走ります。検索するかどうかを、LLM自身が決められないからです。LLMに「このツールを使う」と決めさせる仕組みが、次のFunction callingです。</p>
 </section>
 
 <section id="fc">
@@ -295,10 +308,9 @@
   <div class="point">説明文の書き方しだいで、関数は呼ばれたり呼ばれなかったりします。「何をする関数か」と「いつ使うか」を書いておくと、LLMが判断しやすくなります。</div>
   <div class="later"><b>S6で使うコマンド</b>　<code>python try_tool.py</code> で、つないだ関数がLLMにどう見えているかを確かめられます。<code>python try_tool.py 関数名 引数</code> とすると、LLMを通さずに関数だけを呼んで、戻り値を見られます。うまく動かないときは、関数とLLMのどちらに原因があるかを、ここで切り分けてください。</div>
 
-  <!-- Tips（案）: Laboroの実体験に合わせて差し替える -->
   <div class="tip">
     <div class="tip-title">Laboroの現場から</div>
-    <p>関数の名前と説明文は、LLMが読む仕様書です。関数が呼ばれないときは、まずプロンプトより先に説明文を疑います。人が読んでも「いつ使うか」が分からない説明は、LLMにも伝わりません。</p>
+    <p>関数の名前と説明文は、LLMが読む仕様書です。関数が呼ばれないときは、プロンプトより先に説明文を見直します。人が読んで「いつ使うか」が分からない説明は、LLMにも伝わりません。</p>
   </div>
 
   <p class="next"><b>次へ</b>　Function callingで、LLMはツールを使うかどうかを決められるようになりました。ただ、何を聞くか、次に何をさせるかを決めているのは、まだ使う人です。目的だけを渡せば、そこから先の手順をLLMが自分で決めて動く。それがAIエージェントです。</p>
@@ -365,10 +377,9 @@
 
   <div class="later"><b>S6でやること</b>　S5で試した検索を関数にして、エージェントにツールとして渡します。<code>my_agent/agent.py</code> のTODOと、ADKのドキュメントのツールのページを読んで、自分の手で書いてください。<code>python ask.py</code> では、「調べる → 引けた資料 → 回答」の3段で、エージェントの動きが毎回表示されます。</div>
 
-  <!-- Tips（案）: Laboroの実体験に合わせて差し替える -->
   <div class="tip">
     <div class="tip-title">Laboroの現場から</div>
-    <p>エージェントは自分で手順を決めるので、同じ質問でも、どのツールをどう呼ぶかが毎回変わることがあります。回答がおかしいときは、直す前に、まず「どのツールが呼ばれ、何が引けていたか」を見ます。原因はLLMより検索の側にあることがよくあります。今日の <code>ask.py</code> が、それを毎回表示するのはそのためです。</p>
+    <p>エージェントは自分で手順を決めるので、同じ質問でも、どのツールをどう呼ぶかが毎回変わることがあります。仕事で作るときは、どこまでをエージェントに任せ、どこで人が確かめるかを先に決めます。回答がおかしいときは、どのツールが呼ばれ、何が引けていたかを最初に見ます。今日の <code>ask.py</code> は、これを毎回表示します。</p>
   </div>
 </section>
 
@@ -378,6 +389,7 @@
     <li>ベクトル検索: Mikolov ほか「<a href="https://arxiv.org/abs/1301.3781">Efficient Estimation of Word Representations in Vector Space</a>」（2013年1月、word2vec）</li>
     <li>LLM: Vaswani ほか「<a href="https://arxiv.org/abs/1706.03762">Attention Is All You Need</a>」（2017年6月、Transformer）。ChatGPTの公開は2022年11月30日</li>
     <li>RAG: Lewis ほか「<a href="https://arxiv.org/abs/2005.11401">Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks</a>」（2020年5月）</li>
+    <li>Graph RAG: Edge ほか「<a href="https://arxiv.org/abs/2404.16130">From Local to Global: A Graph RAG Approach to Query-Focused Summarization</a>」（2024年4月、Microsoft Research）</li>
     <li>Function calling: OpenAI「<a href="https://openai.com/index/function-calling-and-other-api-updates/">Function calling and other API updates</a>」（2023年6月13日）</li>
     <li>AIエージェント: Yao ほか「<a href="https://arxiv.org/abs/2210.03629">ReAct: Synergizing Reasoning and Acting in Language Models</a>」（2022年10月）。Google ADKの公開は2025年4月（Google Cloud Next 2025）</li>
     <li>AIエージェントの定義: Google「<a href="https://adk.dev/agents/">Agents（ADKのドキュメント）</a>」、Anthropic「<a href="https://www.anthropic.com/engineering/building-effective-agents">Building effective agents</a>」（2024年12月）</li>
