@@ -10,7 +10,7 @@
 | 14:10 | S1 オープニング・環境準備 | リポジトリを取得してビルドを始め、待つあいだに趣旨を聞いてチームで自己紹介する。「こんにちは」が返るのを確かめる |
 | 14:30 | S2 お題とデモ | 42 Tokyoをお客さんに見立て、42 Tokyoの魅力を答える営業エージェントを作る、というお題を聞く |
 | 14:40 | S3 仕組みの説明 | `docs/shikumi.html` をブラウザで開き、LLM、ベクトル検索、RAG、Function calling、AIエージェントの話を聞く |
-| 14:55 | S4 QAを書く | `data/my_qa.csv` にある全員共通の3問に、自分の答えを書く |
+| 14:55 | S4 QAを書く | `data/my_qa.csv` にある全員共通の3問に、自分の答えを書く。時間が余ったら、自由にQAを足してもよい |
 | 15:15 | S5 登録して検索する | QAを登録して検索する。途中で固有QAを足す |
 | 15:45 | 休憩 | |
 | 15:55 | S6 ツールを作る | 検索をツールにして、エージェントにつなぐ。ADKのドキュメント: [Function tools](https://adk.dev/tools-custom/function-tools/)。早く終わったら [発展課題](docs/challenges.md) |
@@ -64,7 +64,6 @@ docker compose exec app bash   # コンテナの中に入る
 | :-- | :-- | :-- |
 | `my_agent/agent.py` | あなたのエージェント。今は返事をするだけで、QAは見ていない | **S6で作り変える**（TODOを参照） |
 | `data/my_qa.csv` | あなたが書く42の魅力QA | **書く** |
-| `data/shakaijin_qa.csv` | 社会人向けのメリットのQA（全員共通） | 触らない |
 | `data/secret_qa.csv` | 固有QA | S5でコピーして作る |
 | `ops/sample_secret_qa.csv` | 固有QAのもと | S5で `data/secret_qa.csv` にコピーする |
 | `register.py`、`search.py`、`ask.py`、`try_tool.py` | 上のコマンド | 使う |
